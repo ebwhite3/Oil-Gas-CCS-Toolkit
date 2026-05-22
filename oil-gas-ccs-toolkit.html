@@ -102,6 +102,20 @@
   }
   .plot-container svg { display: block; width: 100%; height: auto; }
   .plot-caption { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 0.2rem; }
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0.75rem 0 0.4rem 0;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card p { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.6rem 0; }
+  details > summary { padding: 0.25rem 0; }
+  details ul { margin: 0.25rem 0 0 1.25rem; padding: 0; }
+  details li { padding: 0.15rem 0; }
   @media (max-width: 600px) {
     .row, .row3 { grid-template-columns: 1fr; }
   }
@@ -117,6 +131,7 @@
   <button class="tab" data-tab="calc">Fluid &amp; Drilling</button>
   <button class="tab" data-tab="volumetrics">Volumetrics</button>
   <button class="tab" data-tab="decline">Decline &amp; Econ</button>
+  <button class="tab" data-tab="ccs">CCS Calcs &amp; Conversions</button>
 </nav>
 <main>
   <section id="convert">
@@ -362,6 +377,177 @@
       </div>
     </div>
   </section>
+
+  <section id="ccs" hidden>
+    <div class="card">
+      <h2>CO₂ Mass ↔ Volume Conversions</h2>
+      <p>Enter any value; all others update. Reservoir-condition volumes use the editable density below.</p>
+      <div class="row">
+        <div><label>Reservoir-condition CO₂ density (g/cc)</label>
+          <input type="number" id="cv-rhoRes" value="0.7" step="any"></div>
+        <div></div>
+      </div>
+      <div class="section-label">Mass</div>
+      <div class="row3">
+        <div><label>tonnes (t)</label><input type="number" id="cv-t" step="any"></div>
+        <div><label>kilotonnes (kt)</label><input type="number" id="cv-kt" step="any"></div>
+        <div><label>megatonnes (Mt)</label><input type="number" id="cv-Mt" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>short tons</label><input type="number" id="cv-ston" step="any"></div>
+        <div><label>pounds (lb)</label><input type="number" id="cv-lb" step="any"></div>
+      </div>
+      <div class="section-label">Standard volume (60°F, 14.696 psia)</div>
+      <div class="row3">
+        <div><label>scf</label><input type="number" id="cv-scf" step="any"></div>
+        <div><label>Mscf (10³ scf)</label><input type="number" id="cv-Mscf" step="any"></div>
+        <div><label>MMcf (10⁶ scf)</label><input type="number" id="cv-MMcf" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>Bcf (10⁹ scf)</label><input type="number" id="cv-Bcf" step="any"></div>
+        <div><label>sm³</label><input type="number" id="cv-sm3" step="any"></div>
+      </div>
+      <div class="section-label">Reservoir-condition volume (uses ρ above)</div>
+      <div class="row3">
+        <div><label>bbl</label><input type="number" id="cv-bbl" step="any"></div>
+        <div><label>m³</label><input type="number" id="cv-m3" step="any"></div>
+        <div><label>acre-ft</label><input type="number" id="cv-acft" step="any"></div>
+      </div>
+      <div class="formula">
+        Basis — CO₂ MW: 44.01 g/mol; std density: 0.1144 lb/scf (≈ 1.842 kg/sm³);
+        1 tonne ≈ 19,252 scf; 1 sm³ = 35.315 scf. Reservoir volume = mass / ρ<sub>res</sub>.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>CO₂ Density, Viscosity &amp; Phase</h2>
+      <p>Enter pressure and temperature at reservoir conditions. Density via Peng-Robinson EOS; viscosity is a screening approximation (see method note). Phase diagram below updates live with the inputs — the red marker is your point.</p>
+      <div class="row">
+        <div><label>Pressure (psia)</label><input type="number" id="cdv-P" value="2500" step="any"></div>
+        <div><label>Temperature (°F)</label><input type="number" id="cdv-T" value="150" step="any"></div>
+      </div>
+      <div class="result" style="margin-top:0.75rem;">
+        ρ = <span class="value" id="cdv-rhoGcc">—</span> g/cc &nbsp;|&nbsp;
+        <span class="value" id="cdv-rhoLbft3">—</span> lb/ft³ &nbsp;|&nbsp;
+        <span class="value" id="cdv-rhoKgm3">—</span> kg/m³
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        μ = <span class="value" id="cdv-mu">—</span> cP &nbsp;|&nbsp;
+        Phase: <span class="value" id="cdv-phase">—</span>
+        <span id="cdv-warn" style="color:#b54708; font-size:0.85rem;"></span>
+      </div>
+      <div class="plot-container" style="margin-top:0.75rem;"><div id="pd-plot"></div></div>
+      <div class="formula">
+        Density: Peng-Robinson cubic EOS (T<sub>c</sub>=304.13 K, P<sub>c</sub>=7.377 MPa, ω=0.225). Valid 1000-5000 psi, 60-250°F.
+        Viscosity: density-based screening fit calibrated to NIST WebBook (~±10%). Use NIST for critical work.
+        Vaporization curve: Span &amp; Wagner (1996); sublimation &amp; fusion dashed. Y-axis log scale.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Storage Capacity (DOE/NETL Volumetric)</h2>
+      <p>G<sub>CO₂</sub> = A · h · φ · (1 − S<sub>wirr</sub>) · ρ<sub>CO₂</sub> · E. Per Goodman et al. (2011) / DOE-NETL Carbon Storage Atlas methodology.</p>
+      <div class="row3">
+        <div><label>Area A (acres)</label><input type="number" id="sc-A" value="1000" step="any"></div>
+        <div><label>Net thickness h (ft)</label><input type="number" id="sc-h" value="100" step="any"></div>
+        <div><label>Porosity φ (%)</label><input type="number" id="sc-phi" value="20" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>S<sub>wirr</sub> (%)</label><input type="number" id="sc-Swirr" value="30" step="any"></div>
+        <div><label>CO₂ density ρ (g/cc, res)</label><input type="number" id="sc-rho" value="0.7" step="any"></div>
+        <div><label>Storage efficiency E (fraction)</label><input type="number" id="sc-E" value="0.02" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>Injection rate (Mt/yr, for years calc)</label><input type="number" id="sc-rate" value="1" step="any"></div>
+        <div></div>
+      </div>
+      <div class="result">
+        Capacity = <span class="value" id="sc-tonnes">—</span> tonnes &nbsp;|&nbsp;
+        <span class="value" id="sc-Mt">—</span> Mt &nbsp;|&nbsp;
+        <span class="value" id="sc-MMcf">—</span> MMcf (std)
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        At <span class="value" id="sc-rateEcho">—</span> Mt/yr injection: <span class="value" id="sc-years">—</span> years
+      </div>
+      <div class="formula">
+        Typical E (Goodman et al. 2011 / DOE-NETL): saline aquifers 1–4%; depleted oil/gas reservoirs 5–20%.
+        Reservoir volume × density × E = stored mass. 1 tonne CO₂ ≈ 19,252 scf at standard conditions.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>CO₂ Injection Rate Conversions</h2>
+      <p>Enter any rate; all others update. Surface volumes at standard conditions; reservoir volumes use ρ below.</p>
+      <div class="row">
+        <div><label>Reservoir-condition CO₂ density (g/cc)</label>
+          <input type="number" id="ir-rhoRes" value="0.7" step="any"></div>
+        <div></div>
+      </div>
+      <div class="section-label">Mass rate</div>
+      <div class="row" style="margin-bottom:0.5rem;">
+        <div><label>Mt/yr</label><input type="number" id="ir-Mtyr" step="any"></div>
+        <div><label>kt/yr</label><input type="number" id="ir-ktyr" step="any"></div>
+      </div>
+      <div class="row">
+        <div><label>t/d</label><input type="number" id="ir-td" step="any"></div>
+        <div><label>kg/s</label><input type="number" id="ir-kgs" step="any"></div>
+      </div>
+      <div class="section-label">Standard volume rate (60°F, 14.696 psia)</div>
+      <div class="row3">
+        <div><label>MMscf/d</label><input type="number" id="ir-MMscfd" step="any"></div>
+        <div><label>Mscf/d</label><input type="number" id="ir-Mscfd" step="any"></div>
+        <div><label>sm³/d</label><input type="number" id="ir-sm3d" step="any"></div>
+      </div>
+      <div class="section-label">Reservoir volume rate (uses ρ above)</div>
+      <div class="row">
+        <div><label>bbl/d</label><input type="number" id="ir-bbld" step="any"></div>
+        <div><label>m³/d</label><input type="number" id="ir-m3d" step="any"></div>
+      </div>
+      <div class="formula">
+        Conversion basis as in Section 1. Mt/yr uses 365.25-day year. Reservoir m³ = mass / ρ<sub>res</sub>.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Plume Radius (Volumetric Estimate)</h2>
+      <p>Screening estimate assuming uniform radial displacement. Does NOT account for buoyancy, dissolution, residual trapping, or heterogeneity.</p>
+      <div class="row3">
+        <div><label>Cumulative CO₂ mass (Mt)</label><input type="number" id="pr-M" value="1" step="any"></div>
+        <div><label>CO₂ density ρ (g/cc, res)</label><input type="number" id="pr-rho" value="0.7" step="any"></div>
+        <div><label>Net thickness h (ft)</label><input type="number" id="pr-h" value="100" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>Porosity φ (%)</label><input type="number" id="pr-phi" value="20" step="any"></div>
+        <div><label>S<sub>wirr</sub> (%)</label><input type="number" id="pr-Swirr" value="30" step="any"></div>
+      </div>
+      <div class="result">
+        r<sub>plume</sub> = <span class="value" id="pr-rFt">—</span> ft &nbsp;|&nbsp;
+        <span class="value" id="pr-rM">—</span> m
+      </div>
+      <div class="formula">
+        r = √[ (M / ρ<sub>CO₂</sub>) / (π · h · φ · (1 − S<sub>wirr</sub>)) ]. Screening only.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Quick Reference Constants</h2>
+      <details open>
+        <summary style="cursor:pointer; font-size:0.9rem; color:var(--accent);">CO₂ properties &amp; conversion constants</summary>
+        <ul style="font-size:0.85rem;">
+          <li>CO₂ critical point: <strong>1071 psia, 87.98°F</strong> (31.1°C, 7.38 MPa)</li>
+          <li>CO₂ triple point: <strong>75.13 psia, −69.83°F</strong> (−56.57°C, 0.518 MPa)</li>
+          <li>CO₂ molecular weight: 44.01 g/mol</li>
+          <li>Standard density (60°F, 14.696 psia): 0.1144 lb/scf ≈ 1.842 kg/sm³</li>
+          <li>1 tonne CO₂ ≈ 19,252 scf at standard conditions</li>
+          <li>1 Mt CO₂ ≈ 19.25 Bscf at standard conditions</li>
+          <li>Typical supercritical density at CCS conditions: 0.5–0.8 g/cc</li>
+          <li>DOE storage efficiency E: 1–4% (saline), 5–20% (depleted HC) — Goodman et al. 2011</li>
+          <li>1 acre = 43,560 ft²; 1 acre-ft = 7,758 bbl = 43,560 ft³ ≈ 1,233 m³</li>
+        </ul>
+      </details>
+    </div>
+
+  </section>
 </main>
 
 <script>
@@ -443,7 +629,7 @@
     },
   };
 
-  const tabIds = ["convert", "calc", "volumetrics", "decline"];
+  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs"];
   document.querySelectorAll("nav.tabs button").forEach(b => {
     b.onclick = () => {
       document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
@@ -492,6 +678,14 @@
     const r = parseFloat(x.toPrecision(6));
     return Math.abs(r) >= 1000 ? r.toLocaleString("en-US") : r.toString();
   }
+  // Same precision as formatNumber but NO thousands separators — safe for type=number input.value
+  function formatNumberRaw(x) {
+    if (!isFinite(x)) return "";
+    if (x === 0) return "0";
+    const abs = Math.abs(x);
+    if (abs >= 1e9 || abs < 1e-3) return x.toExponential(4);
+    return parseFloat(x.toPrecision(6)).toString();
+  }
   catSel.onchange   = rebuildUnits;
   fromUnit.onchange = doConvert;
   toUnit.onchange   = doConvert;
@@ -532,13 +726,13 @@
     if (apiLock) return;
     const a = parseFloat(apiInp.value);
     if (isNaN(a)) return;
-    apiLock = true; sgInp.value = formatNumber(141.5/(131.5+a)); apiLock = false;
+    apiLock = true; sgInp.value = formatNumberRaw(141.5/(131.5+a)); apiLock = false;
   };
   sgInp.oninput = () => {
     if (apiLock) return;
     const s = parseFloat(sgInp.value);
     if (isNaN(s) || s <= 0) return;
-    apiLock = true; apiInp.value = formatNumber(141.5/s - 131.5); apiLock = false;
+    apiLock = true; apiInp.value = formatNumberRaw(141.5/s - 131.5); apiLock = false;
   };
 
   function updateBg() {
@@ -831,13 +1025,13 @@
     if (boeLock) return;
     const g = parseFloat(boeGas.value), r = parseFloat(boeRatio.value);
     if (isNaN(g) || isNaN(r) || r<=0) return;
-    boeLock = true; boeBOE.value = formatNumber(g/r); boeLock = false;
+    boeLock = true; boeBOE.value = formatNumberRaw(g/r); boeLock = false;
   }
   function fromBOE() {
     if (boeLock) return;
     const b = parseFloat(boeBOE.value), r = parseFloat(boeRatio.value);
     if (isNaN(b) || isNaN(r) || r<=0) return;
-    boeLock = true; boeGas.value = formatNumber(b*r); boeLock = false;
+    boeLock = true; boeGas.value = formatNumberRaw(b*r); boeLock = false;
   }
   boeGas.oninput = fromGas;
   boeBOE.oninput = fromBOE;
@@ -908,6 +1102,446 @@
   ["ecPrice","ecOpexFixed","ecOpexVar","ecCapex","ecAbandon","ecDisc","ecWI","ecNRI"]
     .forEach(id => document.getElementById(id).oninput = updateEcon);
   updateEcon();
+
+  // ============================================================
+  // CCS — Constants, EOS, and Calculators
+  // ============================================================
+  const CO2 = {
+    MW_g: 44.01,
+    Tc_K: 304.13,
+    Pc_MPa: 7.3773,
+    omega: 0.225,
+    Tt_K: 216.592,
+    Pt_MPa: 0.51795,
+    rho_std_lbScf: 0.1144,
+    rho_std_kgSm3: 1.842,
+  };
+  const KG_PER_LB    = 0.45359237;
+  const KG_PER_STON  = 907.18474;
+  const M3_PER_BBL   = 0.158987295;
+  const FT3_PER_M3   = 35.31466672;
+  const M3_PER_ACFT  = 1233.48184;
+  const SECONDS_PER_YR = 365.25 * 86400;
+  const PSI_PER_MPA  = 145.03773773;
+  const SCF_PER_KG   = 1 / (CO2.rho_std_lbScf * KG_PER_LB);  // ≈ 19.27
+
+  // ---------- Section 1: Mass ↔ Volume converter ----------
+  const cvFields = [
+    { id: "cv-t",    toKg: v => v * 1000,                             fromKg: kg => kg / 1000 },
+    { id: "cv-kt",   toKg: v => v * 1e6,                              fromKg: kg => kg / 1e6 },
+    { id: "cv-Mt",   toKg: v => v * 1e9,                              fromKg: kg => kg / 1e9 },
+    { id: "cv-ston", toKg: v => v * KG_PER_STON,                      fromKg: kg => kg / KG_PER_STON },
+    { id: "cv-lb",   toKg: v => v * KG_PER_LB,                        fromKg: kg => kg / KG_PER_LB },
+    { id: "cv-scf",  toKg: v => v / SCF_PER_KG,                       fromKg: kg => kg * SCF_PER_KG },
+    { id: "cv-Mscf", toKg: v => v * 1000 / SCF_PER_KG,                fromKg: kg => kg * SCF_PER_KG / 1000 },
+    { id: "cv-MMcf", toKg: v => v * 1e6 / SCF_PER_KG,                 fromKg: kg => kg * SCF_PER_KG / 1e6 },
+    { id: "cv-Bcf",  toKg: v => v * 1e9 / SCF_PER_KG,                 fromKg: kg => kg * SCF_PER_KG / 1e9 },
+    { id: "cv-sm3",  toKg: v => v * CO2.rho_std_kgSm3,                fromKg: kg => kg / CO2.rho_std_kgSm3 },
+    { id: "cv-bbl",  toKg: (v,r) => v * M3_PER_BBL * r * 1000,        fromKg: (kg,r) => kg / (r * 1000 * M3_PER_BBL) },
+    { id: "cv-m3",   toKg: (v,r) => v * r * 1000,                     fromKg: (kg,r) => kg / (r * 1000) },
+    { id: "cv-acft", toKg: (v,r) => v * M3_PER_ACFT * r * 1000,       fromKg: (kg,r) => kg / (r * 1000 * M3_PER_ACFT) },
+  ];
+  let cvLock = false;
+  function cvDistribute(kg, rho, exceptId) {
+    cvLock = true;
+    cvFields.forEach(f => {
+      if (f.id === exceptId) return;
+      const val = f.fromKg(kg, rho);
+      document.getElementById(f.id).value = isFinite(val) ? formatNumberRaw(val) : "";
+    });
+    cvLock = false;
+  }
+  function cvUpdate(sourceId) {
+    if (cvLock) return;
+    const rho = parseFloat(document.getElementById("cv-rhoRes").value);
+    if (isNaN(rho) || rho <= 0) return;
+    if (sourceId === "cv-rhoRes") {
+      // Re-derive everything from current Mt value (a stable mass field)
+      const f = cvFields.find(x => x.id === "cv-Mt");
+      const v = parseFloat(document.getElementById(f.id).value);
+      if (isNaN(v)) return;
+      cvDistribute(f.toKg(v, rho), rho, null);
+      return;
+    }
+    const src = cvFields.find(x => x.id === sourceId);
+    const v = parseFloat(document.getElementById(sourceId).value);
+    if (!src || isNaN(v)) return;
+    cvDistribute(src.toKg(v, rho), rho, sourceId);
+  }
+  cvFields.forEach(f => document.getElementById(f.id).oninput = () => cvUpdate(f.id));
+  document.getElementById("cv-rhoRes").oninput = () => cvUpdate("cv-rhoRes");
+  document.getElementById("cv-Mt").value = "1";
+  cvUpdate("cv-Mt");
+
+  // ---------- Section 2: Density & Viscosity (PR EOS + screening μ) ----------
+  function cubicReal(b, c, d) {
+    // Solve x³ + b x² + c x + d = 0; return real roots
+    const p = c - b*b/3;
+    const q = 2*b*b*b/27 - b*c/3 + d;
+    const disc = q*q/4 + p*p*p/27;
+    if (disc > 1e-15) {
+      const u = Math.cbrt(-q/2 + Math.sqrt(disc));
+      const v = Math.cbrt(-q/2 - Math.sqrt(disc));
+      return [u + v - b/3];
+    } else if (Math.abs(disc) <= 1e-15) {
+      const u = Math.cbrt(-q/2);
+      return [2*u - b/3, -u - b/3];
+    } else {
+      const r = Math.sqrt(-p*p*p/27);
+      const phi = Math.acos(Math.max(-1, Math.min(1, -q/(2*r))));
+      const m = 2 * Math.pow(r, 1/3);
+      return [
+        m * Math.cos(phi/3) - b/3,
+        m * Math.cos((phi + 2*Math.PI)/3) - b/3,
+        m * Math.cos((phi + 4*Math.PI)/3) - b/3,
+      ];
+    }
+  }
+  function co2VaporPressure_MPa(T_K) {
+    if (T_K >= CO2.Tc_K || T_K <= 0) return NaN;
+    const tau = 1 - T_K/CO2.Tc_K;
+    const a1 = -7.0602087, a2 = 1.9391218, a3 = -1.6463597, a4 = -3.2995634;
+    const term = a1*tau + a2*Math.pow(tau,1.5) + a3*Math.pow(tau,2.5) + a4*Math.pow(tau,5);
+    return CO2.Pc_MPa * Math.exp(CO2.Tc_K/T_K * term);
+  }
+  function co2Density_kgm3(P_psia, T_F) {
+    const R = 8.314;
+    const T_K = (T_F - 32)*5/9 + 273.15;
+    const P_Pa = P_psia * 6894.757;
+    const Tc = CO2.Tc_K, Pc = CO2.Pc_MPa * 1e6;
+    const kappa = 0.37464 + 1.54226*CO2.omega - 0.26992*CO2.omega*CO2.omega;
+    const alpha = Math.pow(1 + kappa*(1 - Math.sqrt(T_K/Tc)), 2);
+    const a = 0.45724 * R*R * Tc*Tc / Pc * alpha;
+    const b = 0.07780 * R * Tc / Pc;
+    const A = a*P_Pa / Math.pow(R*T_K, 2);
+    const B = b*P_Pa / (R*T_K);
+    const c2 = -(1 - B);
+    const c1 = A - 3*B*B - 2*B;
+    const c0 = -(A*B - B*B - B*B*B);
+    const roots = cubicReal(c2, c1, c0);
+    const positive = roots.filter(r => r > B && isFinite(r));
+    if (positive.length === 0) return NaN;
+    let Z;
+    if (positive.length === 1) {
+      Z = positive[0];
+    } else {
+      // Subcritical: liquid above Psat (smallest Z), vapor below (largest Z).
+      // Supercritical: smallest Z (dense fluid).
+      const Psat = co2VaporPressure_MPa(T_K);
+      if (T_K >= Tc || (isFinite(Psat) && P_Pa/1e6 >= Psat)) Z = Math.min(...positive);
+      else Z = Math.max(...positive);
+    }
+    return P_Pa * (CO2.MW_g/1000) / (Z * R * T_K);
+  }
+  function co2Viscosity_cP(rho_kgm3, T_K) {
+    // Screening fit calibrated against NIST WebBook in CCS range
+    // μ ≈ μ_dilute(T) + b1·ρ + b2·ρ²   with ρ in g/cc, μ in cP
+    if (!isFinite(rho_kgm3)) return NaN;
+    const rho = rho_kgm3 / 1000;
+    const mu_dilute = 0.0150 + 5.0e-5 * (T_K - 273.15);
+    const excess = 0.0245 * rho + 0.067 * rho * rho;
+    return mu_dilute + excess;
+  }
+  function co2Phase(P_psia, T_F) {
+    const Tc_F = (CO2.Tc_K - 273.15)*9/5 + 32;
+    const Pc_psia = CO2.Pc_MPa * PSI_PER_MPA;
+    const Tt_F = (CO2.Tt_K - 273.15)*9/5 + 32;
+    const Pt_psia = CO2.Pt_MPa * PSI_PER_MPA;
+    if (Math.abs(T_F - Tc_F) < 3 && Math.abs(P_psia - Pc_psia) < 50) return "Near critical point";
+    if (T_F > Tc_F && P_psia > Pc_psia) return "Supercritical Fluid";
+    if (T_F > Tc_F) return "Gas";
+    if (T_F < Tt_F) return P_psia > Pt_psia ? "Solid" : "Vapor";
+    const T_K = (T_F - 32)*5/9 + 273.15;
+    const Psat = co2VaporPressure_MPa(T_K) * PSI_PER_MPA;
+    return P_psia > Psat ? "Liquid" : "Vapor";
+  }
+  function updateCdv() {
+    const P = parseFloat(document.getElementById("cdv-P").value);
+    const T = parseFloat(document.getElementById("cdv-T").value);
+    const el = {
+      gcc: document.getElementById("cdv-rhoGcc"),
+      lbft3: document.getElementById("cdv-rhoLbft3"),
+      kgm3: document.getElementById("cdv-rhoKgm3"),
+      mu: document.getElementById("cdv-mu"),
+      phase: document.getElementById("cdv-phase"),
+      warn: document.getElementById("cdv-warn"),
+    };
+    if (isNaN(P) || isNaN(T) || P <= 0) {
+      el.gcc.textContent = el.lbft3.textContent = el.kgm3.textContent = "—";
+      el.mu.textContent = "—"; el.phase.textContent = "—"; el.warn.textContent = "";
+      drawPhaseDiagram(NaN, NaN);
+      return;
+    }
+    const rho = co2Density_kgm3(P, T);
+    const T_K = (T - 32)*5/9 + 273.15;
+    const mu = co2Viscosity_cP(rho, T_K);
+    el.gcc.textContent   = isFinite(rho) ? (rho/1000).toFixed(4) : "—";
+    el.lbft3.textContent = isFinite(rho) ? (rho/1000 * 62.428).toFixed(2) : "—";
+    el.kgm3.textContent  = isFinite(rho) ? rho.toFixed(2) : "—";
+    el.mu.textContent    = isFinite(mu) ? mu.toFixed(4) : "—";
+    el.phase.textContent = co2Phase(P, T);
+    const Pc = CO2.Pc_MPa * PSI_PER_MPA, Tc_F = (CO2.Tc_K - 273.15)*9/5 + 32;
+    el.warn.textContent = (P < Pc || T < Tc_F) ? "  (subcritical — phase behavior changes)" : "";
+    drawPhaseDiagram(P, T);
+  }
+  ["cdv-P","cdv-T"].forEach(id => document.getElementById(id).oninput = updateCdv);
+
+  // ---------- Section 3: Storage Capacity ----------
+  function updateSc() {
+    const A = parseFloat(document.getElementById("sc-A").value);
+    const h = parseFloat(document.getElementById("sc-h").value);
+    const phi = parseFloat(document.getElementById("sc-phi").value)/100;
+    const Sw  = parseFloat(document.getElementById("sc-Swirr").value)/100;
+    const rho = parseFloat(document.getElementById("sc-rho").value);
+    const E   = parseFloat(document.getElementById("sc-E").value);
+    const rate = parseFloat(document.getElementById("sc-rate").value);
+    const o = {
+      t: document.getElementById("sc-tonnes"),
+      Mt: document.getElementById("sc-Mt"),
+      MMcf: document.getElementById("sc-MMcf"),
+      yr: document.getElementById("sc-years"),
+      rate: document.getElementById("sc-rateEcho"),
+    };
+    if ([A,h,phi,Sw,rho,E].some(isNaN) || rho<=0) {
+      Object.values(o).forEach(e => e.textContent = "—"); return;
+    }
+    const V_ft3 = A * 43560 * h * phi * (1 - Sw) * E;
+    const V_m3 = V_ft3 / FT3_PER_M3;
+    const mass_kg = V_m3 * rho * 1000;
+    const mass_t = mass_kg / 1000;
+    const mass_Mt = mass_t / 1e6;
+    const std_scf = mass_kg * SCF_PER_KG;
+    o.t.textContent    = formatNumber(mass_t);
+    o.Mt.textContent   = formatNumber(mass_Mt);
+    o.MMcf.textContent = formatNumber(std_scf / 1e6);
+    if (!isNaN(rate) && rate > 0) {
+      o.yr.textContent   = formatNumber(mass_Mt / rate);
+      o.rate.textContent = rate;
+    } else {
+      o.yr.textContent = "—"; o.rate.textContent = "—";
+    }
+  }
+  ["sc-A","sc-h","sc-phi","sc-Swirr","sc-rho","sc-E","sc-rate"].forEach(id =>
+    document.getElementById(id).oninput = updateSc);
+  updateSc();
+
+  // ---------- Section 4: Injection rate converter ----------
+  const irFields = [
+    { id: "ir-Mtyr",   toKgs: v => v * 1e9 / SECONDS_PER_YR,                             fromKgs: kgs => kgs * SECONDS_PER_YR / 1e9 },
+    { id: "ir-ktyr",   toKgs: v => v * 1e6 / SECONDS_PER_YR,                             fromKgs: kgs => kgs * SECONDS_PER_YR / 1e6 },
+    { id: "ir-td",     toKgs: v => v * 1000 / 86400,                                     fromKgs: kgs => kgs * 86400 / 1000 },
+    { id: "ir-kgs",    toKgs: v => v,                                                    fromKgs: kgs => kgs },
+    { id: "ir-MMscfd", toKgs: v => v * 1e6 / SCF_PER_KG / 86400,                         fromKgs: kgs => kgs * 86400 * SCF_PER_KG / 1e6 },
+    { id: "ir-Mscfd",  toKgs: v => v * 1000 / SCF_PER_KG / 86400,                        fromKgs: kgs => kgs * 86400 * SCF_PER_KG / 1000 },
+    { id: "ir-sm3d",   toKgs: v => v * CO2.rho_std_kgSm3 / 86400,                        fromKgs: kgs => kgs * 86400 / CO2.rho_std_kgSm3 },
+    { id: "ir-bbld",   toKgs: (v,r) => v * M3_PER_BBL * r * 1000 / 86400,                fromKgs: (kgs,r) => kgs * 86400 / (M3_PER_BBL * r * 1000) },
+    { id: "ir-m3d",    toKgs: (v,r) => v * r * 1000 / 86400,                             fromKgs: (kgs,r) => kgs * 86400 / (r * 1000) },
+  ];
+  let irLock = false;
+  function irDistribute(kgs, rho, exceptId) {
+    irLock = true;
+    irFields.forEach(f => {
+      if (f.id === exceptId) return;
+      const val = f.fromKgs(kgs, rho);
+      document.getElementById(f.id).value = isFinite(val) ? formatNumberRaw(val) : "";
+    });
+    irLock = false;
+  }
+  function irUpdate(sourceId) {
+    if (irLock) return;
+    const rho = parseFloat(document.getElementById("ir-rhoRes").value);
+    if (isNaN(rho) || rho <= 0) return;
+    if (sourceId === "ir-rhoRes") {
+      const f = irFields.find(x => x.id === "ir-Mtyr");
+      const v = parseFloat(document.getElementById(f.id).value);
+      if (isNaN(v)) return;
+      irDistribute(f.toKgs(v, rho), rho, null);
+      return;
+    }
+    const src = irFields.find(x => x.id === sourceId);
+    const v = parseFloat(document.getElementById(sourceId).value);
+    if (!src || isNaN(v)) return;
+    irDistribute(src.toKgs(v, rho), rho, sourceId);
+  }
+  irFields.forEach(f => document.getElementById(f.id).oninput = () => irUpdate(f.id));
+  document.getElementById("ir-rhoRes").oninput = () => irUpdate("ir-rhoRes");
+  document.getElementById("ir-Mtyr").value = "1";
+  irUpdate("ir-Mtyr");
+
+  // ---------- Section 5: Plume radius ----------
+  function updatePr() {
+    const M_Mt = parseFloat(document.getElementById("pr-M").value);
+    const rho  = parseFloat(document.getElementById("pr-rho").value);
+    const h    = parseFloat(document.getElementById("pr-h").value);
+    const phi  = parseFloat(document.getElementById("pr-phi").value)/100;
+    const Sw   = parseFloat(document.getElementById("pr-Swirr").value)/100;
+    const elFt = document.getElementById("pr-rFt"), elM = document.getElementById("pr-rM");
+    if ([M_Mt,rho,h,phi,Sw].some(isNaN) || rho<=0 || h<=0 || phi<=0 || (1-Sw)<=0) {
+      elFt.textContent = "—"; elM.textContent = "—"; return;
+    }
+    const M_kg = M_Mt * 1e9;
+    const V_m3 = M_kg / (rho * 1000);
+    const V_ft3 = V_m3 * FT3_PER_M3;
+    const Area_ft2 = V_ft3 / (h * phi * (1 - Sw));
+    const r_ft = Math.sqrt(Area_ft2 / Math.PI);
+    elFt.textContent = formatNumber(r_ft);
+    elM.textContent  = formatNumber(r_ft * 0.3048);
+  }
+  ["pr-M","pr-rho","pr-h","pr-phi","pr-Swirr"].forEach(id =>
+    document.getElementById(id).oninput = updatePr);
+  updatePr();
+
+  // ---------- Section 7: CO₂ Phase Diagram ----------
+  function drawPhaseDiagram(userP_psia, userT_F) {
+    const el = document.getElementById("pd-plot");
+    if (!el) return;
+    const w = 600, h = 400, pad = { l: 60, r: 30, t: 30, b: 55 };
+    const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+    const T_min_F = -90, T_max_F = 250;
+    const P_min = 14.7, P_max = 5000;
+    const logMin = Math.log10(P_min), logMax = Math.log10(P_max);
+    const X = T => pad.l + (T - T_min_F)/(T_max_F - T_min_F) * pw;
+    const Y = P => pad.t + ph - (Math.log10(P) - logMin)/(logMax - logMin) * ph;
+
+    const Tc_F = (CO2.Tc_K - 273.15)*9/5 + 32;
+    const Pc_psia = CO2.Pc_MPa * PSI_PER_MPA;
+    const Tt_F = (CO2.Tt_K - 273.15)*9/5 + 32;
+    const Pt_psia = CO2.Pt_MPa * PSI_PER_MPA;
+
+    // Build curves
+    const vapPts = [];
+    for (let i = 0; i <= 80; i++) {
+      const T_K = CO2.Tt_K + (CO2.Tc_K - CO2.Tt_K) * i/80;
+      const Pm = co2VaporPressure_MPa(T_K);
+      if (isFinite(Pm) && Pm > 0) {
+        vapPts.push([(T_K - 273.15)*9/5 + 32, Pm * PSI_PER_MPA]);
+      }
+    }
+    const subPts = [];
+    for (let i = 0; i <= 60; i++) {
+      const T_K = CO2.Tt_K - (CO2.Tt_K - 180) * i/60;
+      const tau = 1 - T_K/CO2.Tt_K;
+      if (tau < 0) continue;
+      const a1 = -14.740846, a2 = 2.4327015, a3 = -5.3061778;
+      const lnP = CO2.Tt_K/T_K * (a1*tau + a2*Math.pow(tau,1.9) + a3*Math.pow(tau,2.9));
+      const Pm = CO2.Pt_MPa * Math.exp(lnP);
+      const T_F = (T_K - 273.15)*9/5 + 32;
+      if (T_F >= T_min_F) subPts.push([T_F, Math.max(Pm * PSI_PER_MPA, P_min * 0.5)]);
+    }
+    const fusPts = [];
+    for (let i = 0; i <= 100; i++) {
+      const T_K = CO2.Tt_K + i * 0.05;
+      const x = T_K/CO2.Tt_K - 1;
+      const Pm = CO2.Pt_MPa * (1 + 1955.539*x + 2055.4593*x*x);
+      const T_F = (T_K - 273.15)*9/5 + 32;
+      const P_psia = Pm * PSI_PER_MPA;
+      fusPts.push([T_F, P_psia]);
+      if (P_psia > P_max * 2) break;
+    }
+
+    function clipPath(pts) {
+      return pts.filter(p => p[0] >= T_min_F && p[0] <= T_max_F && p[1] >= P_min*0.5 && p[1] <= P_max*1.5);
+    }
+    const vapClip = clipPath(vapPts);
+    const subClip = clipPath(subPts);
+    const fusClip = clipPath(fusPts);
+
+    function pathOf(pts) {
+      return pts.map((p,i) => (i?"L":"M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
+    }
+
+    let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; max-width:600px; display:block;">`;
+    // Plot area background = vapor
+    svg += `<rect x="${pad.l}" y="${pad.t}" width="${pw}" height="${ph}" fill="#fff7d6"/>`;
+    // Liquid region (above vap curve, T_t to T_c, up to chart top)
+    if (vapClip.length > 1) {
+      let liqPath = `M ${X(vapClip[0][0])} ${Y(vapClip[0][1])}`;
+      vapClip.forEach(p => liqPath += ` L ${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`);
+      liqPath += ` L ${X(Tc_F).toFixed(1)} ${pad.t} L ${X(vapClip[0][0]).toFixed(1)} ${pad.t} Z`;
+      svg += `<path d="${liqPath}" fill="#dbeafe" stroke="none"/>`;
+    }
+    // Supercritical box (T>Tc, P>Pc)
+    const xTc = X(Tc_F), yPc = Y(Pc_psia);
+    svg += `<rect x="${xTc.toFixed(1)}" y="${pad.t}" width="${(pad.l+pw-xTc).toFixed(1)}" height="${(yPc-pad.t).toFixed(1)}" fill="#f3e8ff"/>`;
+    // Solid region (above sublimation curve, left of triple-T vertical)
+    if (subClip.length > 1) {
+      let solidPath = `M ${X(Tt_F).toFixed(1)} ${pad.t}`;
+      solidPath += ` L ${X(Tt_F).toFixed(1)} ${Y(Pt_psia).toFixed(1)}`;
+      subClip.forEach((p, i) => {
+        if (i === 0) return;
+        solidPath += ` L ${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`;
+      });
+      const last = subClip[subClip.length - 1];
+      solidPath += ` L ${pad.l} ${Y(last[1]).toFixed(1)}`;
+      solidPath += ` L ${pad.l} ${pad.t} Z`;
+      svg += `<path d="${solidPath}" fill="#e5e7eb" stroke="none"/>`;
+    }
+
+    // Grid + axes
+    svg += `<rect x="${pad.l}" y="${pad.t}" width="${pw}" height="${ph}" fill="none" stroke="#666"/>`;
+    // X ticks (every 50°F)
+    for (let T = -50; T <= T_max_F; T += 50) {
+      const x = X(T);
+      svg += `<line x1="${x.toFixed(1)}" y1="${pad.t+ph}" x2="${x.toFixed(1)}" y2="${pad.t+ph+4}" stroke="#666"/>`;
+      svg += `<text x="${x.toFixed(1)}" y="${pad.t+ph+16}" font-size="10" text-anchor="middle" fill="#444">${T}</text>`;
+    }
+    // Y ticks (log decades)
+    for (let l = Math.ceil(logMin); l <= Math.floor(logMax); l++) {
+      const y = Y(Math.pow(10,l));
+      svg += `<line x1="${pad.l-4}" y1="${y.toFixed(1)}" x2="${pad.l}" y2="${y.toFixed(1)}" stroke="#666"/>`;
+      svg += `<text x="${pad.l-6}" y="${(y+3).toFixed(1)}" font-size="10" text-anchor="end" fill="#444">${Math.pow(10,l)}</text>`;
+    }
+
+    // Curves
+    svg += `<path d="${pathOf(vapClip)}" stroke="#1d4ed8" stroke-width="2" fill="none"/>`;
+    if (subClip.length > 1) svg += `<path d="${pathOf(subClip)}" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>`;
+    if (fusClip.length > 1) svg += `<path d="${pathOf(fusClip)}" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>`;
+    // Reference: dashed lines for Tc and Pc
+    svg += `<line x1="${xTc.toFixed(1)}" y1="${pad.t}" x2="${xTc.toFixed(1)}" y2="${pad.t+ph}" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 4"/>`;
+    svg += `<line x1="${pad.l}" y1="${yPc.toFixed(1)}" x2="${pad.l+pw}" y2="${yPc.toFixed(1)}" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 4"/>`;
+
+    // Key points
+    const triple = { x: X(Tt_F), y: Y(Pt_psia) };
+    const critical = { x: xTc, y: yPc };
+    svg += `<circle cx="${triple.x.toFixed(1)}" cy="${triple.y.toFixed(1)}" r="4" fill="#374151" stroke="#fff"/>`;
+    svg += `<text x="${(triple.x+6).toFixed(1)}" y="${(triple.y-6).toFixed(1)}" font-size="10" fill="#374151">Triple (−69.8°F, 75 psia)</text>`;
+    svg += `<circle cx="${critical.x.toFixed(1)}" cy="${critical.y.toFixed(1)}" r="4" fill="#374151" stroke="#fff"/>`;
+    svg += `<text x="${(critical.x+6).toFixed(1)}" y="${(critical.y+12).toFixed(1)}" font-size="10" fill="#374151">Critical (88°F, 1071 psia)</text>`;
+
+    // Region labels
+    svg += `<text x="${(pad.l+30).toFixed(1)}" y="${(pad.t+ph-15).toFixed(1)}" font-size="13" fill="#7a6500" font-weight="600">Vapor / Gas</text>`;
+    svg += `<text x="${(X(0)).toFixed(1)}" y="${(pad.t+30).toFixed(1)}" font-size="13" fill="#1e40af" font-weight="600">Liquid</text>`;
+    svg += `<text x="${(xTc+30).toFixed(1)}" y="${(pad.t+25).toFixed(1)}" font-size="13" fill="#6b21a8" font-weight="600">Supercritical</text>`;
+    if (X(Tt_F) - pad.l > 30) {
+      svg += `<text x="${(pad.l+5).toFixed(1)}" y="${(pad.t+30).toFixed(1)}" font-size="13" fill="#4b5563" font-weight="600">Solid</text>`;
+    }
+
+    // Standard reference point
+    const stdX = X(60), stdY = Y(14.7);
+    svg += `<circle cx="${stdX.toFixed(1)}" cy="${stdY.toFixed(1)}" r="3" fill="#0e7c5a" stroke="#fff"/>`;
+    svg += `<text x="${(stdX+6).toFixed(1)}" y="${(stdY-6).toFixed(1)}" font-size="9" fill="#0e7c5a">std (60°F, 14.7 psia)</text>`;
+
+    // User point
+    if (isFinite(userP_psia) && isFinite(userT_F)) {
+      const uX = X(userT_F), uY = Y(Math.max(P_min*0.5, Math.min(P_max*1.5, userP_psia)));
+      if (uX >= pad.l && uX <= pad.l+pw && uY >= pad.t && uY <= pad.t+ph) {
+        svg += `<circle cx="${uX.toFixed(1)}" cy="${uY.toFixed(1)}" r="7" fill="none" stroke="#dc2626" stroke-width="2"/>`;
+        svg += `<circle cx="${uX.toFixed(1)}" cy="${uY.toFixed(1)}" r="3" fill="#dc2626"/>`;
+        svg += `<text x="${(uX+10).toFixed(1)}" y="${(uY-8).toFixed(1)}" font-size="11" fill="#dc2626" font-weight="600">${userT_F.toFixed(0)}°F, ${userP_psia.toFixed(0)} psia — ${co2Phase(userP_psia, userT_F)}</text>`;
+      }
+    }
+
+    // Axis labels
+    svg += `<text x="${(pad.l + pw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" font-size="12" text-anchor="middle" fill="#1a1f2c">Temperature (°F)</text>`;
+    svg += `<text x="16" y="${(pad.t + ph/2).toFixed(1)}" font-size="12" text-anchor="middle" fill="#1a1f2c" transform="rotate(-90 16 ${(pad.t + ph/2).toFixed(1)})">Pressure (psia, log)</text>`;
+    // Title
+    svg += `<text x="${(pad.l).toFixed(1)}" y="${(pad.t-12).toFixed(1)}" font-size="11" fill="#6b7280">Solid = grey, Liquid = blue, Vapor = yellow, Supercritical = purple. Dashed: sublimation &amp; fusion.</text>`;
+
+    svg += `</svg>`;
+    el.innerHTML = svg;
+  }
+
+  updateCdv();  // also draws the phase diagram
 </script>
 </body>
 </html>
