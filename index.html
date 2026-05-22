@@ -94,6 +94,14 @@
     color: var(--muted);
     margin-top: 0.5rem;
   }
+  .plot-container {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.4rem;
+  }
+  .plot-container svg { display: block; width: 100%; height: auto; }
+  .plot-caption { font-size: 0.75rem; color: var(--muted); text-align: center; margin-top: 0.2rem; }
   @media (max-width: 600px) {
     .row, .row3 { grid-template-columns: 1fr; }
   }
@@ -106,8 +114,9 @@
 </header>
 <nav class="tabs">
   <button class="tab active" data-tab="convert">Unit Converter</button>
-  <button class="tab" data-tab="calc">Fluid &amp; Pressure</button>
+  <button class="tab" data-tab="calc">Fluid &amp; Drilling</button>
   <button class="tab" data-tab="volumetrics">Volumetrics</button>
+  <button class="tab" data-tab="decline">Decline &amp; Econ</button>
 </nav>
 <main>
   <section id="convert">
@@ -193,6 +202,35 @@
       <div class="result">B<sub>o</sub> = <span class="value" id="boOut">—</span> rb/STB</div>
       <div class="formula">Bo = 0.972 + 0.000147 · F^1.175,  F = R<sub>s</sub>·√(γ<sub>g</sub>/γ<sub>o</sub>) + 1.25·T(°F); γ<sub>o</sub> from °API. Valid for saturated oil near bubble point.</div>
     </div>
+
+    <div class="card">
+      <h2>Cement Volume (Annular)</h2>
+      <div class="row3">
+        <div><label>Casing OD (in)</label><input type="number" id="cmOD" value="9.625" step="any"></div>
+        <div><label>Casing ID (in)</label><input type="number" id="cmID" value="8.835" step="any"></div>
+        <div><label>Hole/OH ID (in)</label><input type="number" id="cmHD" value="12.25" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>Top of cement (ft)</label><input type="number" id="cmTop" value="0" step="any"></div>
+        <div><label>Bottom of interval (ft)</label><input type="number" id="cmBot" value="2000" step="any"></div>
+        <div><label>Excess factor (%)</label><input type="number" id="cmEx" value="50" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>Cement yield (ft³/sk)</label><input type="number" id="cmY" value="1.18" step="any"></div>
+        <div><label>Mix water (gal/sk)</label><input type="number" id="cmMW" value="5.2" step="any"></div>
+        <div><label>Displ. depth (ft, to shoe)</label><input type="number" id="cmDD" value="2000" step="any"></div>
+      </div>
+      <div class="result">
+        Annular = <span class="value" id="cmAnn">—</span> bbl &nbsp;(<span class="value" id="cmAnnFt3">—</span> ft³) &nbsp;|&nbsp;
+        With excess = <span class="value" id="cmAnnEx">—</span> bbl
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Sacks = <span class="value" id="cmSk">—</span> sk &nbsp;|&nbsp;
+        Mix water = <span class="value" id="cmMWv">—</span> bbl &nbsp;|&nbsp;
+        Displacement = <span class="value" id="cmDV">—</span> bbl
+      </div>
+      <div class="formula">Annular bbl/ft = (D<sub>h</sub>² − OD²)/1029.4; Internal bbl/ft = ID²/1029.4. Sacks = annular ft³·(1+excess)/yield. Defaults are typical Class H neat.</div>
+    </div>
   </section>
 
   <section id="volumetrics" hidden>
@@ -220,6 +258,108 @@
         <span class="value" id="ooipRecMM">—</span> MMSTB
       </div>
       <div class="formula">N = 7758 · A · h · NG · φ · (1−S<sub>w</sub>) / B<sub>oi</sub>  (7758 bbl per acre-ft). Recoverable = N · RF.</div>
+    </div>
+
+    <div class="card">
+      <h2>Original Gas in Place (Volumetric)</h2>
+      <div class="row3">
+        <div><label>Area (acres)</label><input type="number" id="ogipA" value="640" step="any"></div>
+        <div><label>Gross thickness (ft)</label><input type="number" id="ogipH" value="50" step="any"></div>
+        <div><label>Net-to-gross (%)</label><input type="number" id="ogipNG" value="100" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>Porosity (%)</label><input type="number" id="ogipPhi" value="15" step="any"></div>
+        <div><label>Water saturation S<sub>w</sub> (%)</label><input type="number" id="ogipSw" value="25" step="any"></div>
+        <div><label>B<sub>gi</sub> (rcf/scf)</label><input type="number" id="ogipBgi" value="0.005" step="any"></div>
+      </div>
+      <div class="result">
+        OGIP = <span class="value" id="ogipOut">—</span> scf &nbsp;|&nbsp;
+        <span class="value" id="ogipOutBcf">—</span> Bcf
+      </div>
+      <div class="formula">G = 43,560 · A · h · NG · φ · (1−S<sub>w</sub>) / B<sub>gi</sub>  (43,560 ft³ per acre-ft). 1 Bcf = 10⁹ scf.</div>
+    </div>
+
+    <div class="card">
+      <h2>BOE Converter</h2>
+      <div class="row3">
+        <div><label>Gas (Mcf)</label><input type="number" id="boeGas" value="6000" step="any"></div>
+        <div><label>Oil-equivalent (BOE)</label><input type="number" id="boeBOE" value="1000" step="any"></div>
+        <div><label>Ratio (Mcf : 1 BOE)</label><input type="number" id="boeRatio" value="6" step="any"></div>
+      </div>
+      <div class="formula">BOE = Mcf / ratio. 6:1 is the SEC/energy-equivalence standard; some operators use 20:1 for current-price economic equivalence.</div>
+    </div>
+  </section>
+
+  <section id="decline" hidden>
+    <div class="card">
+      <h2>Arps Decline (Forecast &amp; EUR)</h2>
+      <div class="row3">
+        <div><label>Initial rate q<sub>i</sub> (bbl/d)</label><input type="number" id="arpQi" value="500" step="any"></div>
+        <div><label>Initial decline D<sub>i</sub> (nominal, 1/yr)</label><input type="number" id="arpDi" value="0.5" step="any"></div>
+        <div><label>b (0=exp, 0.5=hyp, 1=harm)</label><input type="number" id="arpB" value="0.8" step="0.1" min="0" max="2"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>Forecast horizon (years)</label><input type="number" id="arpT" value="20" step="any"></div>
+        <div><label>Economic limit q<sub>econ</sub> (bbl/d)</label><input type="number" id="arpQecon" value="5" step="any"></div>
+        <div><label>Terminal D<sub>min</sub> (1/yr; 0 = none)</label><input type="number" id="arpDmin" value="0.08" step="any"></div>
+      </div>
+      <div style="display:flex;gap:1rem;align-items:center;margin-top:0.75rem;flex-wrap:wrap;">
+        <label style="margin:0;display:inline-flex;align-items:center;gap:0.35rem;cursor:pointer;">
+          <input type="checkbox" id="arpLogY" style="width:auto;"> Log y-axis (rate plot)
+        </label>
+        <span style="font-size:0.85rem;color:var(--muted);" id="arpMode">—</span>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div class="plot-container"><div id="arpPlotQ"></div><div class="plot-caption">Rate (bbl/d) vs t (yr)</div></div>
+        <div class="plot-container"><div id="arpPlotN"></div><div class="plot-caption">Cum Np (bbl) vs t (yr)</div></div>
+      </div>
+      <div class="result">
+        EUR = <span class="value" id="arpEUR">—</span> bbl &nbsp;|&nbsp;
+        <span class="value" id="arpEURMM">—</span> MMSTB &nbsp;|&nbsp;
+        at t = <span class="value" id="arpTeff">—</span> yr,
+        q<sub>final</sub> = <span class="value" id="arpQend">—</span> bbl/d
+      </div>
+      <div class="formula">Exp (b=0): q=q<sub>i</sub>·exp(−D<sub>i</sub>t). Hyp: q=q<sub>i</sub>/(1+b·D<sub>i</sub>t)<sup>1/b</sup>. Harm (b=1): q=q<sub>i</sub>/(1+D<sub>i</sub>t). With D<sub>min</sub>: switches to exponential at D<sub>min</sub> when instantaneous D(t) reaches it.</div>
+    </div>
+
+    <div class="card">
+      <h2>Project Economics</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.5rem 0;">
+        Uses the Arps annual production above. CAPEX hits at t=0; abandonment hits at economic limit (last year).
+      </p>
+      <div class="row3">
+        <div><label>Oil price ($/bbl, flat)</label><input type="number" id="ecPrice" value="70" step="any"></div>
+        <div><label>OPEX fixed ($/month, per well)</label><input type="number" id="ecOpexFixed" value="3000" step="any"></div>
+        <div><label>OPEX variable ($/bbl)</label><input type="number" id="ecOpexVar" value="6" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>CAPEX ($, at t=0)</label><input type="number" id="ecCapex" value="6000000" step="any"></div>
+        <div><label>Abandonment ($, at ECL)</label><input type="number" id="ecAbandon" value="100000" step="any"></div>
+        <div><label>Discount rate (%/yr)</label><input type="number" id="ecDisc" value="10" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>Working interest WI (%)</label><input type="number" id="ecWI" value="100" step="any"></div>
+        <div><label>Net revenue interest NRI (%)</label><input type="number" id="ecNRI" value="80" step="any"></div>
+      </div>
+      <div class="result">
+        Gross production = <span class="value" id="ecGross">—</span> bbl &nbsp;|&nbsp;
+        Net to WI (sales) = <span class="value" id="ecNet">—</span> bbl
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Gross revenue = $<span class="value" id="ecRev">—</span> &nbsp;|&nbsp;
+        Total OPEX (WI share) = $<span class="value" id="ecOpex">—</span>
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Undiscounted net CF = $<span class="value" id="ecCF">—</span> &nbsp;|&nbsp;
+        NPV @ disc rate = $<span class="value" id="ecNPV">—</span>
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Payout = <span class="value" id="ecPayout">—</span> yr
+      </div>
+      <div class="formula">
+        Per year: Revenue = NRI · Q · price; OPEX = WI · (12·Fixed·Δt + Q · Variable); CF = Revenue − OPEX (− WI·Abandon on final year).
+        Cash-out at t=0: −WI·CAPEX. NPV = −WI·CAPEX + Σ CF<sub>y</sub>/(1+d)<sup>y</sup>.
+      </div>
     </div>
   </section>
 </main>
@@ -303,7 +443,7 @@
     },
   };
 
-  const tabIds = ["convert", "calc", "volumetrics"];
+  const tabIds = ["convert", "calc", "volumetrics", "decline"];
   document.querySelectorAll("nav.tabs button").forEach(b => {
     b.onclick = () => {
       document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
@@ -449,7 +589,325 @@
     recMM.textContent = formatNumber(NR/1e6);
   }
   ["ooipA","ooipH","ooipNG","ooipPhi","ooipSw","ooipBoi","ooipRF"].forEach(id => document.getElementById(id).oninput = updateOOIP);
+
+  // ========== Cement volume ==========
+  function updateCement() {
+    const OD = parseFloat(document.getElementById("cmOD").value);
+    const ID = parseFloat(document.getElementById("cmID").value);
+    const Dh = parseFloat(document.getElementById("cmHD").value);
+    const top = parseFloat(document.getElementById("cmTop").value);
+    const bot = parseFloat(document.getElementById("cmBot").value);
+    const ex  = parseFloat(document.getElementById("cmEx").value)/100;
+    const yld = parseFloat(document.getElementById("cmY").value);
+    const mw  = parseFloat(document.getElementById("cmMW").value);
+    const dd  = parseFloat(document.getElementById("cmDD").value);
+    const o = {
+      ann: document.getElementById("cmAnn"),
+      annFt3: document.getElementById("cmAnnFt3"),
+      annEx: document.getElementById("cmAnnEx"),
+      sk: document.getElementById("cmSk"),
+      mw: document.getElementById("cmMWv"),
+      dv: document.getElementById("cmDV"),
+    };
+    if ([OD,ID,Dh,top,bot,ex,yld,mw,dd].some(isNaN) || Dh<=OD || yld<=0 || ID>=OD) {
+      Object.values(o).forEach(e => e.textContent="—"); return;
+    }
+    const L = Math.max(0, bot - top);
+    const annBblFt = (Dh*Dh - OD*OD)/1029.4;
+    const intBblFt = (ID*ID)/1029.4;
+    const annBbl = annBblFt * L;
+    const annFt3 = annBbl * 5.614583;
+    const annBblEx = annBbl * (1 + ex);
+    const annFt3Ex = annFt3 * (1 + ex);
+    const sacks = annFt3Ex / yld;
+    const mwBbl = sacks * mw / 42;
+    const dispBbl = intBblFt * dd;
+    o.ann.textContent    = formatNumber(annBbl);
+    o.annFt3.textContent = formatNumber(annFt3);
+    o.annEx.textContent  = formatNumber(annBblEx);
+    o.sk.textContent     = formatNumber(sacks);
+    o.mw.textContent     = formatNumber(mwBbl);
+    o.dv.textContent     = formatNumber(dispBbl);
+  }
+  ["cmOD","cmID","cmHD","cmTop","cmBot","cmEx","cmY","cmMW","cmDD"].forEach(id => document.getElementById(id).oninput = updateCement);
+  updateCement();
+
+  // ========== OGIP ==========
+  function updateOGIP() {
+    const A   = parseFloat(document.getElementById("ogipA").value);
+    const h   = parseFloat(document.getElementById("ogipH").value);
+    const NG  = parseFloat(document.getElementById("ogipNG").value)/100;
+    const phi = parseFloat(document.getElementById("ogipPhi").value)/100;
+    const Sw  = parseFloat(document.getElementById("ogipSw").value)/100;
+    const Bgi = parseFloat(document.getElementById("ogipBgi").value);
+    const out = document.getElementById("ogipOut"), outBcf = document.getElementById("ogipOutBcf");
+    if ([A,h,NG,phi,Sw,Bgi].some(isNaN) || Bgi<=0) {
+      out.textContent="—"; outBcf.textContent="—"; return;
+    }
+    const G = 43560 * A * h * NG * phi * (1 - Sw) / Bgi;
+    out.textContent    = formatNumber(G);
+    outBcf.textContent = formatNumber(G/1e9);
+  }
+  ["ogipA","ogipH","ogipNG","ogipPhi","ogipSw","ogipBgi"].forEach(id => document.getElementById(id).oninput = updateOGIP);
   updateOOIP();
+  updateOGIP();
+
+  // ========== Plot helper (SVG, single-series) ==========
+  function shortNum(x) {
+    const a = Math.abs(x);
+    if (a === 0) return "0";
+    if (a >= 1e9) return (x/1e9).toFixed(1)+"B";
+    if (a >= 1e6) return (x/1e6).toFixed(1)+"M";
+    if (a >= 1e3) return (x/1e3).toFixed(1)+"k";
+    if (a >= 10)  return x.toFixed(0);
+    if (a >= 1)   return x.toFixed(1);
+    return x.toFixed(2);
+  }
+  const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  function sup(n) { return String(n).split('').map(c => SUP[c] || c).join(''); }
+
+  function makePlot(containerId, points, opts) {
+    opts = opts || {};
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!points || points.length < 2) { el.innerHTML = ""; return; }
+    const w = 380, h = 200, pad = { l: 50, r: 12, t: 10, b: 36 };
+    const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+    const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+    const xMin = 0, xMax = Math.max(...xs, 0.001);
+    let yMin, yMax;
+    const posYs = ys.filter(y => y > 0);
+    if (opts.logY) {
+      if (posYs.length === 0) { el.innerHTML = ""; return; }
+      yMin = Math.pow(10, Math.floor(Math.log10(Math.min(...posYs))));
+      yMax = Math.pow(10, Math.ceil(Math.log10(Math.max(...posYs))));
+      if (yMin === yMax) yMax = yMin * 10;
+    } else {
+      yMin = 0;
+      yMax = Math.max(...ys, 0.001) * 1.05;
+    }
+    const X = x => pad.l + (x - xMin)/(xMax - xMin) * pw;
+    const Y = opts.logY
+      ? y => pad.t + ph - (Math.log10(Math.max(y, yMin)) - Math.log10(yMin)) / (Math.log10(yMax) - Math.log10(yMin)) * ph
+      : y => pad.t + ph - (y - yMin)/(yMax - yMin) * ph;
+
+    let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
+    for (let i=1;i<5;i++){const yy=pad.t+ph*i/5;svg+=`<line x1="${pad.l}" y1="${yy}" x2="${pad.l+pw}" y2="${yy}" stroke="#eef0f4"/>`;}
+    svg += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${pad.t+ph}" stroke="#888"/>`;
+    svg += `<line x1="${pad.l}" y1="${pad.t+ph}" x2="${pad.l+pw}" y2="${pad.t+ph}" stroke="#888"/>`;
+    for (let i=0;i<=5;i++){
+      const xv = xMin + (xMax-xMin)*i/5;
+      const x = X(xv);
+      svg += `<line x1="${x}" y1="${pad.t+ph}" x2="${x}" y2="${pad.t+ph+4}" stroke="#888"/>`;
+      svg += `<text x="${x}" y="${pad.t+ph+16}" font-size="10" text-anchor="middle" fill="#444">${xv.toFixed(xv<10?1:0)}</text>`;
+    }
+    if (opts.logY) {
+      for (let l=Math.ceil(Math.log10(yMin));l<=Math.floor(Math.log10(yMax));l++){
+        const y = Y(Math.pow(10,l));
+        svg += `<line x1="${pad.l-4}" y1="${y}" x2="${pad.l}" y2="${y}" stroke="#888"/>`;
+        svg += `<text x="${pad.l-6}" y="${y+3}" font-size="10" text-anchor="end" fill="#444">10${sup(l)}</text>`;
+      }
+    } else {
+      for (let i=0;i<=5;i++){
+        const yv = yMin + (yMax-yMin)*i/5;
+        const y = Y(yv);
+        svg += `<line x1="${pad.l-4}" y1="${y}" x2="${pad.l}" y2="${y}" stroke="#888"/>`;
+        svg += `<text x="${pad.l-6}" y="${y+3}" font-size="10" text-anchor="end" fill="#444">${shortNum(yv)}</text>`;
+      }
+    }
+    const d = points.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join(" ");
+    svg += `<path d="${d}" stroke="${opts.color||"#1d4ed8"}" fill="none" stroke-width="1.5"/>`;
+    svg += `<text x="${pad.l+pw/2}" y="${h-4}" font-size="11" text-anchor="middle" fill="#444">${opts.xLabel||""}</text>`;
+    svg += `<text x="14" y="${pad.t+ph/2}" font-size="11" text-anchor="middle" fill="#444" transform="rotate(-90 14 ${pad.t+ph/2})">${opts.yLabel||""}</text>`;
+    svg += `</svg>`;
+    el.innerHTML = svg;
+  }
+
+  // ========== Arps Decline ==========
+  let arpsAnnual = [];   // [{tEnd, Q, dt}] — year-by-year production for econ
+  function updateArps() {
+    const qi    = parseFloat(document.getElementById("arpQi").value);
+    const Di    = parseFloat(document.getElementById("arpDi").value);
+    const b     = parseFloat(document.getElementById("arpB").value);
+    const tMax  = parseFloat(document.getElementById("arpT").value);
+    const qEcon = parseFloat(document.getElementById("arpQecon").value) || 0;
+    const Dmin  = parseFloat(document.getElementById("arpDmin").value) || 0;
+    const logY  = document.getElementById("arpLogY").checked;
+    const eurEl = document.getElementById("arpEUR"), eurMM = document.getElementById("arpEURMM");
+    const tEffEl = document.getElementById("arpTeff"), qEnd = document.getElementById("arpQend");
+    const modeEl = document.getElementById("arpMode");
+    if ([qi,Di,b,tMax].some(v => isNaN(v)) || qi<=0 || Di<=0 || tMax<=0) {
+      [eurEl,eurMM,tEffEl,qEnd].forEach(e => e.textContent="—");
+      modeEl.textContent = "—";
+      makePlot("arpPlotQ", [], {}); makePlot("arpPlotN", [], {});
+      arpsAnnual = []; updateEcon();
+      return;
+    }
+
+    const DAYS = 365.25;
+    const qiYr = qi * DAYS;
+    const isExp  = Math.abs(b) < 1e-9;
+    const isHarm = Math.abs(b - 1) < 1e-9;
+
+    let tSwitch = Infinity;
+    if (Dmin > 0 && Dmin < Di && !isExp) {
+      tSwitch = isHarm ? (Di/Dmin - 1)/Di : (Di/Dmin - 1)/(b*Di);
+    }
+    let qS = 0, NpS = 0;
+    if (isFinite(tSwitch)) {
+      qS = isHarm ? qi/(1+Di*tSwitch) : qi/Math.pow(1+b*Di*tSwitch, 1/b);
+      NpS = isHarm
+        ? qiYr/Di * Math.log(1+Di*tSwitch)
+        : qiYr/((1-b)*Di) * (1 - Math.pow(qS/qi, 1-b));
+    }
+
+    function calc(t) {
+      let q, Np;
+      if (t <= tSwitch) {
+        if (isExp)       q = qi * Math.exp(-Di*t);
+        else if (isHarm) q = qi / (1 + Di*t);
+        else             q = qi / Math.pow(1 + b*Di*t, 1/b);
+        if (isExp)       Np = qiYr * (1 - Math.exp(-Di*t)) / Di;
+        else if (isHarm) Np = qiYr / Di * Math.log(1+Di*t);
+        else             Np = qiYr / ((1-b)*Di) * (1 - Math.pow(q/qi, 1-b));
+      } else {
+        const dt = t - tSwitch;
+        q = qS * Math.exp(-Dmin*dt);
+        Np = NpS + qS*DAYS * (1 - Math.exp(-Dmin*dt)) / Dmin;
+      }
+      return { q, Np };
+    }
+
+    const N_PTS = 200;
+    const qPts = [], NpPts = [];
+    let tEnd = tMax, qFinal = 0, NpFinal = 0;
+    for (let i = 0; i <= N_PTS; i++) {
+      const t = (i/N_PTS) * tMax;
+      const { q, Np } = calc(t);
+      qPts.push([t, q]); NpPts.push([t, Np]);
+      qFinal = q; NpFinal = Np;
+      if (qEcon > 0 && q <= qEcon && i > 0) {
+        tEnd = t; break;
+      }
+    }
+
+    let mode = isExp ? "Exponential" : isHarm ? "Harmonic" : `Hyperbolic (b=${b})`;
+    if (isFinite(tSwitch) && tSwitch < tEnd) mode += `; switches to exponential at t=${tSwitch.toFixed(2)} yr`;
+    modeEl.textContent = mode;
+
+    eurEl.textContent  = formatNumber(NpFinal);
+    eurMM.textContent  = formatNumber(NpFinal/1e6);
+    tEffEl.textContent = tEnd.toFixed(2);
+    qEnd.textContent   = formatNumber(qFinal);
+
+    makePlot("arpPlotQ", qPts,  { logY: logY,  xLabel: "t (yr)", yLabel: "q (bbl/d)" });
+    makePlot("arpPlotN", NpPts, { logY: false, xLabel: "t (yr)", yLabel: "Np (bbl)", color: "#0e7c5a" });
+
+    // Build annual production array for economics
+    arpsAnnual = [];
+    const wholeYears = Math.floor(tEnd);
+    let prevNp = 0;
+    for (let y = 1; y <= wholeYears; y++) {
+      const Np = calc(y).Np;
+      arpsAnnual.push({ tEnd: y, Q: Np - prevNp, dt: 1 });
+      prevNp = Np;
+    }
+    if (tEnd - wholeYears > 1e-6) {
+      const Np = calc(tEnd).Np;
+      arpsAnnual.push({ tEnd: tEnd, Q: Np - prevNp, dt: tEnd - wholeYears });
+    }
+    updateEcon();
+  }
+  ["arpQi","arpDi","arpB","arpT","arpQecon","arpDmin"].forEach(id => document.getElementById(id).oninput = updateArps);
+  document.getElementById("arpLogY").onchange = updateArps;
+  updateArps();
+
+  // ========== BOE Converter ==========
+  const boeGas   = document.getElementById("boeGas");
+  const boeBOE   = document.getElementById("boeBOE");
+  const boeRatio = document.getElementById("boeRatio");
+  let boeLock = false;
+  function fromGas() {
+    if (boeLock) return;
+    const g = parseFloat(boeGas.value), r = parseFloat(boeRatio.value);
+    if (isNaN(g) || isNaN(r) || r<=0) return;
+    boeLock = true; boeBOE.value = formatNumber(g/r); boeLock = false;
+  }
+  function fromBOE() {
+    if (boeLock) return;
+    const b = parseFloat(boeBOE.value), r = parseFloat(boeRatio.value);
+    if (isNaN(b) || isNaN(r) || r<=0) return;
+    boeLock = true; boeGas.value = formatNumber(b*r); boeLock = false;
+  }
+  boeGas.oninput = fromGas;
+  boeBOE.oninput = fromBOE;
+  boeRatio.oninput = fromGas;
+  fromGas();
+
+  // ========== Project Economics ==========
+  function updateEcon() {
+    const price   = parseFloat(document.getElementById("ecPrice").value);
+    const opexFx  = parseFloat(document.getElementById("ecOpexFixed").value);
+    const opexVr  = parseFloat(document.getElementById("ecOpexVar").value);
+    const capex   = parseFloat(document.getElementById("ecCapex").value);
+    const abandon = parseFloat(document.getElementById("ecAbandon").value);
+    const disc    = parseFloat(document.getElementById("ecDisc").value)/100;
+    const wi      = parseFloat(document.getElementById("ecWI").value)/100;
+    const nri     = parseFloat(document.getElementById("ecNRI").value)/100;
+    const out = {
+      gross: document.getElementById("ecGross"),
+      net:   document.getElementById("ecNet"),
+      rev:   document.getElementById("ecRev"),
+      opex:  document.getElementById("ecOpex"),
+      cf:    document.getElementById("ecCF"),
+      npv:   document.getElementById("ecNPV"),
+      pay:   document.getElementById("ecPayout"),
+    };
+    if ([price,opexFx,opexVr,capex,abandon,disc,wi,nri].some(isNaN) || arpsAnnual.length === 0) {
+      Object.values(out).forEach(e => e.textContent = "—");
+      return;
+    }
+
+    let totalGross = 0, totalNet = 0, totalRev = 0, totalOpex = 0;
+    let cumCF = -wi * capex;
+    let npv   = -wi * capex;
+    let payout = null;
+
+    for (let i = 0; i < arpsAnnual.length; i++) {
+      const a = arpsAnnual[i];
+      const isLast = (i === arpsAnnual.length - 1);
+      const netQ = a.Q * nri;
+      const rev  = netQ * price;
+      const opex = wi * (12 * opexFx * a.dt + a.Q * opexVr);
+      let cf = rev - opex;
+      if (isLast) cf -= wi * abandon;
+
+      const prevCum = cumCF;
+      cumCF += cf;
+      npv   += cf / Math.pow(1 + disc, a.tEnd);
+
+      totalGross += a.Q;
+      totalNet   += netQ;
+      totalRev   += rev;
+      totalOpex  += opex;
+
+      if (payout === null && cumCF > 0 && cf > 0) {
+        const tStart = a.tEnd - a.dt;
+        payout = tStart + (-prevCum / cf) * a.dt;
+      }
+    }
+
+    out.gross.textContent = formatNumber(totalGross);
+    out.net.textContent   = formatNumber(totalNet);
+    out.rev.textContent   = formatNumber(totalRev);
+    out.opex.textContent  = formatNumber(totalOpex);
+    out.cf.textContent    = formatNumber(cumCF);
+    out.npv.textContent   = formatNumber(npv);
+    out.pay.textContent   = (payout !== null) ? payout.toFixed(2) : "never";
+  }
+  ["ecPrice","ecOpexFixed","ecOpexVar","ecCapex","ecAbandon","ecDisc","ecWI","ecNRI"]
+    .forEach(id => document.getElementById(id).oninput = updateEcon);
+  updateEcon();
 </script>
 </body>
 </html>
