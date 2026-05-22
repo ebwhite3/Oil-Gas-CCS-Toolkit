@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oil & Gas Toolkit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --border: #d8dde3;
+    --text: #1a1f2c;
+    --muted: #6b7280;
+    --accent: #1d4ed8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: #0c1726;
+    color: #fff;
+    padding: 1rem 1.5rem;
+  }
+  header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; }
+  header .subtitle { color: #9aa4b3; font-size: 0.85rem; }
+  nav.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+    padding: 0 1.5rem;
+  }
+  nav.tabs button {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+  }
+  nav.tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card h2 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 0.25rem; }
+  input, select {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    background: #fff;
+    font-family: inherit;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  input[readonly] { background: #f9fafb; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .result {
+    background: #f1f5fb;
+    border: 1px solid #c8d4ec;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+  }
+  .result .value { font-weight: 600; color: var(--accent); }
+  .formula {
+    font-family: Consolas, Menlo, monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  @media (max-width: 600px) {
+    .row, .row3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Oil &amp; Gas Toolkit</h1>
+  <div class="subtitle">Unit conversions and reservoir/drilling calculators</div>
+</header>
+<nav class="tabs">
+  <button class="tab active" data-tab="convert">Unit Converter</button>
+  <button class="tab" data-tab="calc">Calculators</button>
+</nav>
+<main>
+  <section id="convert">
+    <div class="card">
+      <h2>Unit Converter</h2>
+      <div>
+        <label for="cat">Category</label>
+        <select id="cat"></select>
+      </div>
+      <div class="row" style="margin-top: 0.75rem;">
+        <div>
+          <label>From</label>
+          <input type="number" id="fromVal" value="1" step="any">
+          <select id="fromUnit" style="margin-top: 0.4rem;"></select>
+        </div>
+        <div>
+          <label>To</label>
+          <input type="text" id="toVal" readonly>
+          <select id="toUnit" style="margin-top: 0.4rem;"></select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="calc" hidden>
+    <div class="card">
+      <h2>Water Viscosity (McCain, 1990)</h2>
+      <div class="row3">
+        <div><label>Temperature (°F)</label><input type="number" id="wvT" value="150" step="any"></div>
+        <div><label>Salinity (ppm)</label><input type="number" id="wvS" value="50000" step="any"></div>
+        <div><label>&nbsp;</label><div style="padding-top:0.5rem;font-size:0.85rem;color:var(--muted);">@ 1 atm</div></div>
+      </div>
+      <div class="result">μ<sub>w</sub> = <span class="value" id="wvOut">—</span> cp</div>
+      <div class="formula">μw = A·T^B, A &amp; B are polynomials in salinity (wt%). Valid ~100–400°F, 0–26 wt%.</div>
+    </div>
+
+    <div class="card">
+      <h2>Hydrostatic Pressure</h2>
+      <div class="row">
+        <div><label>Mud weight (ppg)</label><input type="number" id="hpMW" value="9" step="any"></div>
+        <div><label>TVD (ft)</label><input type="number" id="hpD" value="10000" step="any"></div>
+      </div>
+      <div class="result">
+        Pressure = <span class="value" id="hpP">—</span> psi &nbsp;|&nbsp;
+        Gradient = <span class="value" id="hpG">—</span> psi/ft
+      </div>
+      <div class="formula">P (psi) = 0.052 × MW (ppg) × TVD (ft)</div>
+    </div>
+
+    <div class="card">
+      <h2>API Gravity ↔ Specific Gravity</h2>
+      <div class="row">
+        <div><label>API gravity (°API)</label><input type="number" id="apiVal" value="35" step="any"></div>
+        <div><label>Specific gravity</label><input type="number" id="sgVal" value="0.8498" step="any"></div>
+      </div>
+      <div class="formula">SG = 141.5 / (131.5 + °API). Edits in either field update the other.</div>
+    </div>
+
+    <div class="card">
+      <h2>Gas Formation Volume Factor (B<sub>g</sub>)</h2>
+      <div class="row3">
+        <div><label>Z-factor</label><input type="number" id="bgZ" value="0.9" step="any"></div>
+        <div><label>Temperature (°F)</label><input type="number" id="bgT" value="180" step="any"></div>
+        <div><label>Pressure (psia)</label><input type="number" id="bgP" value="3000" step="any"></div>
+      </div>
+      <div class="result">
+        B<sub>g</sub> = <span class="value" id="bgOut">—</span> ft³/scf &nbsp;|&nbsp;
+        <span class="value" id="bgOutRB">—</span> rb/scf
+      </div>
+      <div class="formula">Bg = 0.02827 · Z · T(°R) / P(psia); 1 rb = 5.615 ft³</div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const categories = {
+    pressure: {
+      name: "Pressure", units: {
+        psi:     { label: "psi",     toBase: v=>v,             fromBase: v=>v },
+        kPa:     { label: "kPa",     toBase: v=>v/6.894757,    fromBase: v=>v*6.894757 },
+        MPa:     { label: "MPa",     toBase: v=>v/0.00689476,  fromBase: v=>v*0.00689476 },
+        bar:     { label: "bar",     toBase: v=>v/0.0689476,   fromBase: v=>v*0.0689476 },
+        atm:     { label: "atm",     toBase: v=>v/0.06804596,  fromBase: v=>v*0.06804596 },
+        "kgcm2": { label: "kg/cm²",  toBase: v=>v/0.0703069,   fromBase: v=>v*0.0703069 },
+      }
+    },
+    temperature: {
+      name: "Temperature", units: {
+        F: { label: "°F", toBase: f=>(f-32)*5/9,     fromBase: c=>c*9/5+32 },
+        C: { label: "°C", toBase: c=>c,              fromBase: c=>c },
+        K: { label: "K",  toBase: k=>k-273.15,       fromBase: c=>c+273.15 },
+        R: { label: "°R", toBase: r=>(r-491.67)*5/9, fromBase: c=>c*9/5+491.67 },
+      }
+    },
+    length: {
+      name: "Length", units: {
+        ft: { label: "ft", toBase: v=>v,             fromBase: v=>v },
+        m:  { label: "m",  toBase: v=>v/0.3048,      fromBase: v=>v*0.3048 },
+        in: { label: "in", toBase: v=>v/12,          fromBase: v=>v*12 },
+        km: { label: "km", toBase: v=>v/0.0003048,   fromBase: v=>v*0.0003048 },
+        mi: { label: "mi", toBase: v=>v/0.000189394, fromBase: v=>v*0.000189394 },
+      }
+    },
+    volume: {
+      name: "Volume", units: {
+        bbl: { label: "bbl",          toBase: v=>v,                fromBase: v=>v },
+        m3:  { label: "m³",           toBase: v=>v/0.158987295,    fromBase: v=>v*0.158987295 },
+        gal: { label: "gal (US)",     toBase: v=>v/42,             fromBase: v=>v*42 },
+        L:   { label: "L",            toBase: v=>v/158.987295,     fromBase: v=>v*158.987295 },
+        ft3: { label: "ft³",          toBase: v=>v/5.614583,       fromBase: v=>v*5.614583 },
+        Mcf: { label: "Mcf (1000 ft³)", toBase: v=>v*1000/5.614583, fromBase: v=>v*5.614583/1000 },
+        MMcf:{ label: "MMcf",         toBase: v=>v*1e6/5.614583,   fromBase: v=>v*5.614583/1e6 },
+      }
+    },
+    flow: {
+      name: "Flow rate", units: {
+        bpd:  { label: "bbl/day", toBase: v=>v,                 fromBase: v=>v },
+        m3d:  { label: "m³/day",  toBase: v=>v/0.158987,        fromBase: v=>v*0.158987 },
+        gpm:  { label: "gal/min", toBase: v=>v*1440/42,         fromBase: v=>v*42/1440 },
+        Ls:   { label: "L/s",     toBase: v=>v*86400/158.987,   fromBase: v=>v*158.987/86400 },
+        mmscfd:{label: "MMscf/day (gas)", toBase: v=>v*1e6/5.614583, fromBase: v=>v*5.614583/1e6 },
+      }
+    },
+    density: {
+      name: "Density / API", units: {
+        gcc:   { label: "g/cc",         toBase: v=>v,                fromBase: v=>v },
+        kgm3:  { label: "kg/m³",        toBase: v=>v/1000,           fromBase: v=>v*1000 },
+        ppg:   { label: "lbm/gal (ppg)",toBase: v=>v/8.3454,         fromBase: v=>v*8.3454 },
+        lbft3: { label: "lbm/ft³",      toBase: v=>v/62.428,         fromBase: v=>v*62.428 },
+        API:   { label: "°API",         toBase: a=>141.5/(131.5+a),  fromBase: g=>141.5/g - 131.5 },
+        SG:    { label: "SG (water=1)", toBase: v=>v,                fromBase: v=>v },
+      }
+    },
+    perm: {
+      name: "Permeability", units: {
+        mD:   { label: "mD",  toBase: v=>v,            fromBase: v=>v },
+        D:    { label: "D",   toBase: v=>v*1000,       fromBase: v=>v/1000 },
+        um2:  { label: "μm²", toBase: v=>v*1013.25,    fromBase: v=>v/1013.25 },
+        m2:   { label: "m²",  toBase: v=>v*1.01325e15, fromBase: v=>v/1.01325e15 },
+      }
+    },
+  };
+
+  document.querySelectorAll("nav.tabs button").forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      document.getElementById("convert").hidden = b.dataset.tab !== "convert";
+      document.getElementById("calc").hidden    = b.dataset.tab !== "calc";
+    };
+  });
+
+  const catSel   = document.getElementById("cat");
+  const fromUnit = document.getElementById("fromUnit");
+  const toUnit   = document.getElementById("toUnit");
+  const fromVal  = document.getElementById("fromVal");
+  const toVal    = document.getElementById("toVal");
+
+  Object.entries(categories).forEach(([k, cat]) => {
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = cat.name;
+    catSel.appendChild(opt);
+  });
+
+  function rebuildUnits() {
+    const cat = categories[catSel.value];
+    fromUnit.innerHTML = "";
+    toUnit.innerHTML = "";
+    Object.entries(cat.units).forEach(([k, u]) => {
+      const o1 = document.createElement("option"); o1.value = k; o1.textContent = u.label; fromUnit.appendChild(o1);
+      const o2 = document.createElement("option"); o2.value = k; o2.textContent = u.label; toUnit.appendChild(o2);
+    });
+    toUnit.selectedIndex = 1;
+    doConvert();
+  }
+  function doConvert() {
+    const cat = categories[catSel.value];
+    const v = parseFloat(fromVal.value);
+    if (isNaN(v)) { toVal.value = ""; return; }
+    const base = cat.units[fromUnit.value].toBase(v);
+    const out  = cat.units[toUnit.value].fromBase(base);
+    toVal.value = formatNumber(out);
+  }
+  function formatNumber(x) {
+    if (!isFinite(x)) return String(x);
+    if (x === 0) return "0";
+    const abs = Math.abs(x);
+    if (abs >= 1e6 || abs < 1e-3) return x.toExponential(4);
+    return parseFloat(x.toPrecision(6)).toString();
+  }
+  catSel.onchange   = rebuildUnits;
+  fromUnit.onchange = doConvert;
+  toUnit.onchange   = doConvert;
+  fromVal.oninput   = doConvert;
+  rebuildUnits();
+
+  function waterViscosity(T_F, S_wtpct) {
+    const S = S_wtpct;
+    const A = 109.574 - 8.40564*S + 0.313314*S*S + 8.72213e-3*S*S*S;
+    const B = -1.12166 + 2.63951e-2*S - 6.79461e-4*S*S - 5.47119e-5*S*S*S + 1.55586e-6*Math.pow(S,4);
+    return A * Math.pow(T_F, B);
+  }
+  function updateWV() {
+    const T = parseFloat(document.getElementById("wvT").value);
+    const ppm = parseFloat(document.getElementById("wvS").value);
+    const out = document.getElementById("wvOut");
+    if (isNaN(T) || isNaN(ppm)) { out.textContent = "—"; return; }
+    out.textContent = formatNumber(waterViscosity(T, ppm/10000));
+  }
+  ["wvT","wvS"].forEach(id => document.getElementById(id).oninput = updateWV);
+  updateWV();
+
+  function updateHP() {
+    const mw = parseFloat(document.getElementById("hpMW").value);
+    const d  = parseFloat(document.getElementById("hpD").value);
+    const P = document.getElementById("hpP"), G = document.getElementById("hpG");
+    if (isNaN(mw) || isNaN(d)) { P.textContent = "—"; G.textContent = "—"; return; }
+    P.textContent = formatNumber(0.052*mw*d);
+    G.textContent = formatNumber(0.052*mw);
+  }
+  ["hpMW","hpD"].forEach(id => document.getElementById(id).oninput = updateHP);
+  updateHP();
+
+  const apiInp = document.getElementById("apiVal");
+  const sgInp  = document.getElementById("sgVal");
+  let apiLock = false;
+  apiInp.oninput = () => {
+    if (apiLock) return;
+    const a = parseFloat(apiInp.value);
+    if (isNaN(a)) return;
+    apiLock = true; sgInp.value = formatNumber(141.5/(131.5+a)); apiLock = false;
+  };
+  sgInp.oninput = () => {
+    if (apiLock) return;
+    const s = parseFloat(sgInp.value);
+    if (isNaN(s) || s <= 0) return;
+    apiLock = true; apiInp.value = formatNumber(141.5/s - 131.5); apiLock = false;
+  };
+
+  function updateBg() {
+    const Z = parseFloat(document.getElementById("bgZ").value);
+    const T = parseFloat(document.getElementById("bgT").value);
+    const P = parseFloat(document.getElementById("bgP").value);
+    const out = document.getElementById("bgOut"), outRB = document.getElementById("bgOutRB");
+    if (isNaN(Z)||isNaN(T)||isNaN(P)||P<=0) { out.textContent = "—"; outRB.textContent = "—"; return; }
+    const Bg = 0.02827 * Z * (T + 459.67) / P;
+    out.textContent   = formatNumber(Bg);
+    outRB.textContent = formatNumber(Bg/5.614583);
+  }
+  ["bgZ","bgT","bgP"].forEach(id => document.getElementById(id).oninput = updateBg);
+  updateBg();
+</script>
+</body>
+</html>
