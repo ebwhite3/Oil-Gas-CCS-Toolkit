@@ -106,7 +106,8 @@
 </header>
 <nav class="tabs">
   <button class="tab active" data-tab="convert">Unit Converter</button>
-  <button class="tab" data-tab="calc">Calculators</button>
+  <button class="tab" data-tab="calc">Fluid &amp; Pressure</button>
+  <button class="tab" data-tab="volumetrics">Volumetrics</button>
 </nav>
 <main>
   <section id="convert">
@@ -178,6 +179,48 @@
       </div>
       <div class="formula">Bg = 0.02827 · Z · T(°R) / P(psia); 1 rb = 5.615 ft³</div>
     </div>
+
+    <div class="card">
+      <h2>Oil Formation Volume Factor (B<sub>o</sub>, Standing 1947)</h2>
+      <div class="row3">
+        <div><label>Solution GOR R<sub>s</sub> (scf/STB)</label><input type="number" id="boRs" value="500" step="any"></div>
+        <div><label>Gas SG (air=1)</label><input type="number" id="boGg" value="0.75" step="any"></div>
+        <div><label>Oil API gravity</label><input type="number" id="boAPI" value="35" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>Temperature (°F)</label><input type="number" id="boT" value="180" step="any"></div>
+      </div>
+      <div class="result">B<sub>o</sub> = <span class="value" id="boOut">—</span> rb/STB</div>
+      <div class="formula">Bo = 0.972 + 0.000147 · F^1.175,  F = R<sub>s</sub>·√(γ<sub>g</sub>/γ<sub>o</sub>) + 1.25·T(°F); γ<sub>o</sub> from °API. Valid for saturated oil near bubble point.</div>
+    </div>
+  </section>
+
+  <section id="volumetrics" hidden>
+    <div class="card">
+      <h2>Original Oil in Place (Volumetric)</h2>
+      <div class="row3">
+        <div><label>Area (acres)</label><input type="number" id="ooipA" value="640" step="any"></div>
+        <div><label>Gross thickness (ft)</label><input type="number" id="ooipH" value="50" step="any"></div>
+        <div><label>Net-to-gross (%)</label><input type="number" id="ooipNG" value="100" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>Porosity (%)</label><input type="number" id="ooipPhi" value="20" step="any"></div>
+        <div><label>Water saturation S<sub>w</sub> (%)</label><input type="number" id="ooipSw" value="30" step="any"></div>
+        <div><label>B<sub>oi</sub> (rb/STB)</label><input type="number" id="ooipBoi" value="1.25" step="any"></div>
+      </div>
+      <div class="row" style="margin-top:0.5rem;">
+        <div><label>Recovery factor (%)</label><input type="number" id="ooipRF" value="25" step="any"></div>
+      </div>
+      <div class="result">
+        OOIP = <span class="value" id="ooipOut">—</span> STB &nbsp;|&nbsp;
+        <span class="value" id="ooipOutMM">—</span> MMSTB
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Recoverable = <span class="value" id="ooipRec">—</span> STB &nbsp;|&nbsp;
+        <span class="value" id="ooipRecMM">—</span> MMSTB
+      </div>
+      <div class="formula">N = 7758 · A · h · NG · φ · (1−S<sub>w</sub>) / B<sub>oi</sub>  (7758 bbl per acre-ft). Recoverable = N · RF.</div>
+    </div>
   </section>
 </main>
 
@@ -208,6 +251,16 @@
         in: { label: "in", toBase: v=>v/12,          fromBase: v=>v*12 },
         km: { label: "km", toBase: v=>v/0.0003048,   fromBase: v=>v*0.0003048 },
         mi: { label: "mi", toBase: v=>v/0.000189394, fromBase: v=>v*0.000189394 },
+      }
+    },
+    area: {
+      name: "Area", units: {
+        acre: { label: "acre",    toBase: v=>v,           fromBase: v=>v },
+        ft2:  { label: "ft²",     toBase: v=>v/43560,     fromBase: v=>v*43560 },
+        mi2:  { label: "mi²",     toBase: v=>v*640,       fromBase: v=>v/640 },
+        m2:   { label: "m²",      toBase: v=>v/4046.8564, fromBase: v=>v*4046.8564 },
+        km2:  { label: "km²",     toBase: v=>v*247.105,   fromBase: v=>v/247.105 },
+        ha:   { label: "hectare", toBase: v=>v*2.47105,   fromBase: v=>v/2.47105 },
       }
     },
     volume: {
@@ -250,12 +303,12 @@
     },
   };
 
+  const tabIds = ["convert", "calc", "volumetrics"];
   document.querySelectorAll("nav.tabs button").forEach(b => {
     b.onclick = () => {
       document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
       b.classList.add("active");
-      document.getElementById("convert").hidden = b.dataset.tab !== "convert";
-      document.getElementById("calc").hidden    = b.dataset.tab !== "calc";
+      tabIds.forEach(id => document.getElementById(id).hidden = id !== b.dataset.tab);
     };
   });
 
@@ -295,8 +348,9 @@
     if (!isFinite(x)) return String(x);
     if (x === 0) return "0";
     const abs = Math.abs(x);
-    if (abs >= 1e6 || abs < 1e-3) return x.toExponential(4);
-    return parseFloat(x.toPrecision(6)).toString();
+    if (abs >= 1e9 || abs < 1e-3) return x.toExponential(4);
+    const r = parseFloat(x.toPrecision(6));
+    return Math.abs(r) >= 1000 ? r.toLocaleString("en-US") : r.toString();
   }
   catSel.onchange   = rebuildUnits;
   fromUnit.onchange = doConvert;
@@ -359,6 +413,43 @@
   }
   ["bgZ","bgT","bgP"].forEach(id => document.getElementById(id).oninput = updateBg);
   updateBg();
+
+  function updateBo() {
+    const Rs  = parseFloat(document.getElementById("boRs").value);
+    const Gg  = parseFloat(document.getElementById("boGg").value);
+    const API = parseFloat(document.getElementById("boAPI").value);
+    const T   = parseFloat(document.getElementById("boT").value);
+    const out = document.getElementById("boOut");
+    if (isNaN(Rs)||isNaN(Gg)||isNaN(API)||isNaN(T)||Gg<=0) { out.textContent = "—"; return; }
+    const Go = 141.5/(131.5 + API);
+    const F  = Rs * Math.sqrt(Gg/Go) + 1.25 * T;
+    out.textContent = formatNumber(0.972 + 0.000147 * Math.pow(F, 1.175));
+  }
+  ["boRs","boGg","boAPI","boT"].forEach(id => document.getElementById(id).oninput = updateBo);
+  updateBo();
+
+  function updateOOIP() {
+    const A   = parseFloat(document.getElementById("ooipA").value);
+    const h   = parseFloat(document.getElementById("ooipH").value);
+    const NG  = parseFloat(document.getElementById("ooipNG").value)/100;
+    const phi = parseFloat(document.getElementById("ooipPhi").value)/100;
+    const Sw  = parseFloat(document.getElementById("ooipSw").value)/100;
+    const Boi = parseFloat(document.getElementById("ooipBoi").value);
+    const RF  = parseFloat(document.getElementById("ooipRF").value)/100;
+    const out = document.getElementById("ooipOut"),   outMM = document.getElementById("ooipOutMM");
+    const rec = document.getElementById("ooipRec"),   recMM = document.getElementById("ooipRecMM");
+    if ([A,h,NG,phi,Sw,Boi,RF].some(isNaN) || Boi<=0) {
+      out.textContent="—"; outMM.textContent="—"; rec.textContent="—"; recMM.textContent="—"; return;
+    }
+    const N  = 7758 * A * h * NG * phi * (1 - Sw) / Boi;
+    const NR = N * RF;
+    out.textContent   = formatNumber(N);
+    outMM.textContent = formatNumber(N/1e6);
+    rec.textContent   = formatNumber(NR);
+    recMM.textContent = formatNumber(NR/1e6);
+  }
+  ["ooipA","ooipH","ooipNG","ooipPhi","ooipSw","ooipBoi","ooipRF"].forEach(id => document.getElementById(id).oninput = updateOOIP);
+  updateOOIP();
 </script>
 </body>
 </html>
