@@ -986,7 +986,18 @@
         <div class="kv"><div class="k">Estimated TDS</div><div class="v" id="petroTDS">—</div><div class="k">ppm (NaCl-eq)</div></div>
       </div>
 
-      <div class="section-label" style="margin-top:18px;">6. Sensitivity — NaCl (ppm) vs. ϕ and formation factor method</div>
+      <div class="section-label" style="margin-top:18px;">6. Implied R<sub>t</sub> at reference salinities</div>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
+        R<sub>t</sub> that would correspond to the indicated NaCl-equivalent salinity,
+        holding ϕ, formation factor method, depth temperature, and T<sub>ref</sub> at their current values.
+        10,000 ppm is the USDW threshold (40 CFR §144.3); 3,000 ppm is a common Class VI confining-zone reference.
+      </p>
+      <div class="result-grid">
+        <div class="kv"><div class="k">R<sub>t</sub> @ 10,000 ppm NaCl</div><div class="v" id="petroRt10k">—</div><div class="k">ohm-m</div></div>
+        <div class="kv"><div class="k">R<sub>t</sub> @ 3,000 ppm NaCl</div><div class="v" id="petroRt3k">—</div><div class="k">ohm-m</div></div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">7. Sensitivity — NaCl (ppm) vs. ϕ and formation factor method</div>
       <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
         R<sub>t</sub>, depth temperature, and T<sub>ref</sub> held constant.
         Active row (selected rock type) and active column (current ϕ rounded to nearest 5%) are tinted.
@@ -1001,7 +1012,7 @@
       </div>
 
       <details style="margin-top:18px;">
-        <summary>7. Methods, references, and caveats</summary>
+        <summary>8. Methods, references, and caveats</summary>
         <ul style="font-size:13px;">
           <li><strong>Arps temperature correction:</strong> R<sub>w</sub>(T<sub>2</sub>) = R<sub>w</sub>(T<sub>1</sub>) · (T<sub>1</sub> + 7) / (T<sub>2</sub> + 7), T in °F. Arps (1953).</li>
           <li><strong>Gen-9 NaCl (default):</strong> NaCl (ppm) = ROUND(5697.5 · R<sub>w</sub>(T<sub>ref</sub>)<sup>−1.079</sup>, nearest 10). Empirical fit to the Schlumberger Gen-9 chart at T<sub>ref</sub> = 75°F.</li>
@@ -2341,6 +2352,28 @@
     if (!isFinite(ppm) || ppm < 0) return NaN;
     return Math.round(ppm / 10) * 10;
   }
+  // Inverse correlations: NaCl (ppm) → Rw at T_ref.
+  function rwTrefFromNaClGen9(ppm) {
+    if (!isFinite(ppm) || ppm <= 0) return NaN;
+    return Math.pow(5697.5 / ppm, 1 / 1.079);
+  }
+  function rwTrefFromNaClSchlum1988(ppm) {
+    if (!isFinite(ppm) || ppm <= 0) return NaN;
+    return Math.pow(10, 3.562 - 0.955 * Math.log10(ppm)) + 0.0123;
+  }
+  // Compute Rt that would produce the target NaCl-equivalent salinity at current ϕ, F method, and temperatures.
+  function rtFromNaCl(targetPpm, F, Tref, Tdepth, corr) {
+    if (!isFinite(targetPpm) || targetPpm <= 0) return NaN;
+    if (!isFinite(F) || F <= 0) return NaN;
+    if (!isFinite(Tref) || !isFinite(Tdepth)) return NaN;
+    const Rw_tref = corr === "schlum"
+      ? rwTrefFromNaClSchlum1988(targetPpm)
+      : rwTrefFromNaClGen9(targetPpm);
+    if (!isFinite(Rw_tref) || Rw_tref <= 0) return NaN;
+    // Inverse Arps: Rw(Tdepth) = Rw(Tref) · (Tref + 7) / (Tdepth + 7).
+    const Rw_depth = Rw_tref * (Tref + 7) / (Tdepth + 7);
+    return F * Rw_depth;
+  }
 
   function petroGetPhi() {
     const v = parseFloat(document.getElementById("petroPhi").value);
@@ -2437,6 +2470,12 @@
     RwTrefOut.textContent   = isFinite(Rw_tref) ? petroFormatNum(Rw_tref, 3) : "—";
     naClOut.textContent     = petroFormatPpm(nacl);
     tdsOut.textContent      = petroFormatPpm(nacl);
+
+    // Implied Rt at reference salinities (10,000 ppm USDW threshold; 3,000 ppm Class VI reference).
+    const rt10k = rtFromNaCl(10000, F, Tref, Tdepth, corr);
+    const rt3k  = rtFromNaCl(3000,  F, Tref, Tdepth, corr);
+    document.getElementById("petroRt10k").textContent = isFinite(rt10k) ? petroFormatNum(rt10k, 2) : "—";
+    document.getElementById("petroRt3k").textContent  = isFinite(rt3k)  ? petroFormatNum(rt3k,  2) : "—";
 
     // Sensitivity table: rows = FF methods, cols = SENS_PHIS
     const head = document.getElementById("petroSensHead");
