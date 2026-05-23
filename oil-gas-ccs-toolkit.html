@@ -402,6 +402,7 @@
   <button class="tab" data-tab="volumetrics">Volumetrics</button>
   <button class="tab" data-tab="decline">Decline &amp; Econ</button>
   <button class="tab" data-tab="ccs">CCS Calcs &amp; Conversions</button>
+  <button class="tab" data-tab="petro">Resistivity → Salinity</button>
 </nav>
 <main>
   <section id="convert">
@@ -888,6 +889,138 @@
     </div>
 
   </section>
+
+  <section id="petro" hidden>
+    <div class="card">
+      <h2>Resistivity → Porosity → Salinity</h2>
+      <p>
+        Petrophysical salinity estimate from log resistivity. Estimates formation water resistivity (R<sub>w</sub>)
+        from R<sub>t</sub> and φ via a formation factor (F = R<sub>o</sub>/R<sub>w</sub>) relationship, corrects
+        R<sub>w</sub> to a reference temperature with Arps (1953), and converts to NaCl-equivalent salinity.
+        Used for Class VI CCS and Class II UIC USDW characterization.
+      </p>
+
+      <div class="section-label">1. Temperature at depth</div>
+      <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="petroTMode" id="petroModeA" value="A" checked style="width:auto;">
+          Mode A — calculate gradient from BHT
+        </label>
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="petroTMode" id="petroModeB" value="B" style="width:auto;">
+          Mode B — enter gradient directly
+        </label>
+      </div>
+      <div class="row3">
+        <div><label>Surface temperature (°F)</label><input type="number" id="petroSurfT" value="70" step="any"></div>
+        <div id="petroBHTGroup"><label>BHT (°F)</label><input type="number" id="petroBHT" value="124" step="any"></div>
+        <div id="petroTDGroup"><label>Total depth, TD (ft)</label><input type="number" id="petroTD" value="3236" step="any"></div>
+      </div>
+      <div class="row3">
+        <div id="petroGradInputGroup" style="display:none;"><label>Geothermal gradient (°F/100 ft)</label><input type="number" id="petroGradIn" value="1.6" step="any"></div>
+        <div><label>Target depth (ft)</label><input type="number" id="petroTarget" value="2300" step="any"></div>
+        <div></div>
+        <div></div>
+      </div>
+      <div class="result-grid">
+        <div class="kv"><div class="k">Surface T</div><div class="v" id="petroSurfTOut">—</div><div class="k">°F</div></div>
+        <div class="kv"><div class="k">Gradient</div><div class="v" id="petroGradOut">—</div><div class="k">°F/100 ft</div></div>
+        <div class="kv"><div class="k">T at target depth</div><div class="v" id="petroTdepthOut">—</div><div class="k">°F</div></div>
+      </div>
+
+      <div class="section-label">2. Base case inputs</div>
+      <div class="row3">
+        <div><label>True resistivity, R<sub>t</sub> (ohm-m)</label><input type="number" id="petroRt" value="3.8" step="any"></div>
+        <div>
+          <label>Porosity, φ</label>
+          <div style="display:flex; gap:6px;">
+            <input type="number" id="petroPhi" value="30" step="any" style="flex:1;">
+            <select id="petroPhiUnit" style="width:auto; padding-right: 22px;">
+              <option value="pct" selected>%</option>
+              <option value="frac">fraction</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>
+            Reference T, T<sub>ref</sub> (°F)
+            <span class="info-tip" title="75°F is the legacy Schlumberger chart convention. 77°F is the modern SI-aligned convention (25°C). Most published correlations are calibrated at 75°F.">?</span>
+          </label>
+          <input type="number" id="petroTref" value="75" step="any">
+        </div>
+      </div>
+
+      <div class="section-label">3. Salinity correlation</div>
+      <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="petroSalCorr" id="petroSalGen9" value="gen9" checked style="width:auto;">
+          Gen-9 NaCl (default)
+        </label>
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="petroSalCorr" id="petroSalSchlum" value="schlum" style="width:auto;">
+          Schlumberger 1988 chart
+        </label>
+        <span id="petroActiveCorr" style="font-size:12px; color:var(--muted);">Active: Gen-9</span>
+      </div>
+
+      <div class="section-label">4. Rock type / formation factor</div>
+      <div class="row">
+        <div>
+          <label>Rock type (formation factor relationship)</label>
+          <select id="petroRock"></select>
+        </div>
+        <div>
+          <label>F equation</label>
+          <input type="text" id="petroFEq" readonly>
+        </div>
+      </div>
+
+      <div class="section-label">5. Base case results</div>
+      <div class="result-grid">
+        <div class="kv"><div class="k">Formation factor, F</div><div class="v" id="petroF">—</div><div class="k">—</div></div>
+        <div class="kv"><div class="k">R<sub>w</sub> at depth T</div><div class="v" id="petroRwDepth">—</div><div class="k">ohm-m</div></div>
+        <div class="kv"><div class="k">R<sub>w</sub> at T<sub>ref</sub></div><div class="v" id="petroRwTref">—</div><div class="k">ohm-m</div></div>
+        <div class="kv"><div class="k">NaCl salinity</div><div class="v" id="petroNaCl">—</div><div class="k">ppm</div></div>
+      </div>
+      <div class="result-grid">
+        <div class="kv"><div class="k">Estimated TDS</div><div class="v" id="petroTDS">—</div><div class="k">ppm (NaCl-eq)</div></div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">6. Sensitivity — NaCl (ppm) vs. φ and formation factor method</div>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
+        R<sub>t</sub>, depth temperature, and T<sub>ref</sub> held constant.
+        Active row (selected rock type) and active column (current φ rounded to nearest 5%) are tinted.
+        Intersection cell is the base-case anchor.
+        <span id="petroSensCorrCaption">Active correlation: Gen-9.</span>
+      </p>
+      <div style="overflow-x:auto;">
+        <table id="petroSens" class="sensitivity">
+          <thead><tr id="petroSensHead"></tr></thead>
+          <tbody id="petroSensBody"></tbody>
+        </table>
+      </div>
+
+      <details style="margin-top:18px;">
+        <summary>7. Methods, references, and caveats</summary>
+        <ul style="font-size:13px;">
+          <li><strong>Arps temperature correction:</strong> R<sub>w</sub>(T<sub>2</sub>) = R<sub>w</sub>(T<sub>1</sub>) · (T<sub>1</sub> + 7) / (T<sub>2</sub> + 7), T in °F. Arps (1953).</li>
+          <li><strong>Gen-9 NaCl (default):</strong> NaCl (ppm) = ROUND(5697.5 · R<sub>w</sub>(T<sub>ref</sub>)<sup>−1.079</sup>, nearest 10). Empirical fit to the Schlumberger Gen-9 chart at T<sub>ref</sub> = 75°F.</li>
+          <li><strong>Schlumberger 1988 chart correlation:</strong> NaCl (ppm) = 10<sup>((3.562 − log<sub>10</sub>(R<sub>w</sub>(T<sub>ref</sub>) − 0.0123)) / 0.955)</sup>. From <em>Schlumberger Log Interpretation Charts</em>, 1988 edition, Gen-9.</li>
+          <li><strong>Archie's law:</strong> F = R<sub>o</sub>/R<sub>w</sub>; R<sub>w</sub> = R<sub>t</sub>/F under fully water-saturated, clean (shale-free) conditions. Hydrocarbon presence or shaliness will bias R<sub>w</sub> high (and salinity low).</li>
+          <li><strong>Default surface T:</strong> 70°F (typical for shallow subsurface in coastal California). Adjust for site-specific MAGT (mean annual ground temperature).</li>
+          <li><strong>Default gradient (Mode B):</strong> 1.6°F/100 ft, representative of average California sedimentary-basin geothermal gradient. Local gradients range ~1.4–1.8°F/100 ft in non-geothermal basins, higher near the Coast Ranges and Salton Trough.</li>
+          <li><strong>TDS vs. NaCl-equivalent:</strong> reported salinity is NaCl-equivalent. For brines with significant Ca, Mg, sulfate, or bicarbonate, true TDS may differ materially. Apply ion-specific corrections if available.</li>
+          <li><strong>Shaly intervals:</strong> apply Waxman-Smits, dual-water, or Indonesia model separately. This calculator assumes clean-zone Archie analysis.</li>
+        </ul>
+      </details>
+
+      <div class="formula">
+        Workflow: F is computed from φ using the selected rock-type relationship → R<sub>w</sub> at depth T = R<sub>t</sub>/F →
+        R<sub>w</sub> at T<sub>ref</sub> via Arps → NaCl via active correlation. All inputs are live; the sensitivity table
+        recomputes on every change.
+      </div>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -969,7 +1102,7 @@
     },
   };
 
-  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs"];
+  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs", "petro"];
   document.querySelectorAll("nav.tabs button").forEach(b => {
     b.onclick = () => {
       document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
@@ -2167,6 +2300,198 @@
   }
 
   updateCdv();  // also draws the phase diagram
+
+  // ============================================================
+  // Resistivity → Porosity → Salinity
+  // ============================================================
+  const FF_METHODS = [
+    { id: "carb_archie",   name: "Carbonates (Archie m=2)",                eq: "F = 1/φ²",            F: phi => 1 / Math.pow(phi, 2) },
+    { id: "cons_humble",   name: "Consolidated sandstones (Humble simp.)", eq: "F = 0.81/φ²",         F: phi => 0.81 / Math.pow(phi, 2) },
+    { id: "uncons_humble", name: "Unconsolidated sands (Humble)",          eq: "F = 0.62/φ^2.15",     F: phi => 0.62 / Math.pow(phi, 2.15) },
+    { id: "avg_sands",     name: "Average sands",                          eq: "F = 1.45/φ^1.54",     F: phi => 1.45 / Math.pow(phi, 1.54) },
+    { id: "shaly",         name: "Shaly sands",                            eq: "F = 1.65/φ^1.33",     F: phi => 1.65 / Math.pow(phi, 1.33) },
+    { id: "calc",          name: "Calcareous sands",                       eq: "F = 1.45/φ^1.70",     F: phi => 1.45 / Math.pow(phi, 1.70) },
+    { id: "carb_alt",      name: "Carbonates (alternate)",                 eq: "F = 0.85/φ^2.14",     F: phi => 0.85 / Math.pow(phi, 2.14) },
+    { id: "pliocene",      name: "Pliocene sands",                         eq: "F = 2.45/φ^1.08",     F: phi => 2.45 / Math.pow(phi, 1.08) },
+    { id: "miocene",       name: "Miocene sands",                          eq: "F = 1.97/φ^1.29",     F: phi => 1.97 / Math.pow(phi, 1.29) },
+    { id: "sethi",         name: "Clean granular (Sethi)",                 eq: "F = 1.0/φ^(2.05−φ)",  F: phi => 1 / Math.pow(phi, 2.05 - phi) },
+  ];
+  const SENS_PHIS = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40];
+
+  // Arps (1953): Rw varies inversely with (T + 7), T in °F.
+  function arpsRw(Rw_at_T1, T1_F, T2_F) {
+    return Rw_at_T1 * (T1_F + 7) / (T2_F + 7);
+  }
+  // Gen-9 NaCl correlation, rounded to nearest 10 ppm. Argument is Rw at depth T; Arps applied internally.
+  function naclGen9(Rw_at_depthT, T_ref, T_depth) {
+    if (!isFinite(Rw_at_depthT) || Rw_at_depthT <= 0) return NaN;
+    const Rw_tref = arpsRw(Rw_at_depthT, T_depth, T_ref);
+    const ppm = 5697.5 * Math.pow(Rw_tref, -1.079);
+    if (!isFinite(ppm) || ppm < 0) return NaN;
+    return Math.round(ppm / 10) * 10;
+  }
+  // Schlumberger 1988 Gen-9 chart correlation, rounded to nearest 10 ppm.
+  function naclSchlum1988(Rw_at_depthT, T_ref, T_depth) {
+    if (!isFinite(Rw_at_depthT) || Rw_at_depthT <= 0) return NaN;
+    const Rw_tref = arpsRw(Rw_at_depthT, T_depth, T_ref);
+    const inner = Rw_tref - 0.0123;
+    if (inner <= 0) return NaN;
+    const expo = (3.562 - Math.log10(inner)) / 0.955;
+    const ppm = Math.pow(10, expo);
+    if (!isFinite(ppm) || ppm < 0) return NaN;
+    return Math.round(ppm / 10) * 10;
+  }
+
+  function petroGetPhi() {
+    const v = parseFloat(document.getElementById("petroPhi").value);
+    const unit = document.getElementById("petroPhiUnit").value;
+    if (!isFinite(v)) return NaN;
+    return unit === "pct" ? v / 100 : v;
+  }
+  function petroFormatNum(x, digits) {
+    if (!isFinite(x)) return "—";
+    return x.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  }
+  function petroFormatPpm(x) {
+    if (!isFinite(x)) return "—";
+    return Math.round(x).toLocaleString("en-US");
+  }
+
+  // Populate rock-type dropdown once.
+  (function buildRockList() {
+    const sel = document.getElementById("petroRock");
+    if (!sel) return;
+    sel.innerHTML = FF_METHODS.map(m =>
+      `<option value="${m.id}"${m.id === "uncons_humble" ? " selected" : ""}>${m.name}</option>`
+    ).join("");
+  })();
+
+  function petroShowMode() {
+    const mode = document.querySelector('input[name="petroTMode"]:checked').value;
+    document.getElementById("petroBHTGroup").style.display      = mode === "A" ? "" : "none";
+    document.getElementById("petroTDGroup").style.display       = mode === "A" ? "" : "none";
+    document.getElementById("petroGradInputGroup").style.display = mode === "B" ? "" : "none";
+  }
+
+  function petroSelectedCorr() {
+    return document.querySelector('input[name="petroSalCorr"]:checked').value;
+  }
+  function petroComputeNaCl(Rw_depth, Tref, Tdepth) {
+    return petroSelectedCorr() === "schlum"
+      ? naclSchlum1988(Rw_depth, Tref, Tdepth)
+      : naclGen9(Rw_depth, Tref, Tdepth);
+  }
+
+  function updatePetro() {
+    petroShowMode();
+    const mode = document.querySelector('input[name="petroTMode"]:checked').value;
+    const surfT  = parseFloat(document.getElementById("petroSurfT").value);
+    const target = parseFloat(document.getElementById("petroTarget").value);
+    let gradient_perFt, Tdepth;
+    if (mode === "A") {
+      const bht = parseFloat(document.getElementById("petroBHT").value);
+      const td  = parseFloat(document.getElementById("petroTD").value);
+      if ([surfT, bht, td].every(isFinite) && td > 0) {
+        gradient_perFt = (bht - surfT) / td;
+      }
+    } else {
+      const grad100 = parseFloat(document.getElementById("petroGradIn").value);
+      if (isFinite(grad100)) gradient_perFt = grad100 / 100;
+    }
+    if (isFinite(surfT) && isFinite(gradient_perFt) && isFinite(target)) {
+      Tdepth = surfT + gradient_perFt * target;
+    }
+
+    document.getElementById("petroSurfTOut").textContent   = isFinite(surfT) ? petroFormatNum(surfT, 1) : "—";
+    document.getElementById("petroGradOut").textContent    = isFinite(gradient_perFt) ? petroFormatNum(gradient_perFt * 100, 3) : "—";
+    document.getElementById("petroTdepthOut").textContent  = isFinite(Tdepth) ? petroFormatNum(Tdepth, 1) : "—";
+
+    // Active correlation label
+    const corr = petroSelectedCorr();
+    const corrLabel = corr === "schlum" ? "Schlumberger 1988" : "Gen-9";
+    document.getElementById("petroActiveCorr").textContent = "Active: " + corrLabel;
+    document.getElementById("petroSensCorrCaption").textContent = "Active correlation: " + corrLabel + ".";
+
+    const Rt   = parseFloat(document.getElementById("petroRt").value);
+    const phi  = petroGetPhi();
+    const Tref = parseFloat(document.getElementById("petroTref").value);
+    const rockId = document.getElementById("petroRock").value;
+    const rock = FF_METHODS.find(m => m.id === rockId) || FF_METHODS[2];
+    document.getElementById("petroFEq").value = rock.eq;
+
+    // Base case results
+    const Fout = document.getElementById("petroF");
+    const RwDepthOut = document.getElementById("petroRwDepth");
+    const RwTrefOut = document.getElementById("petroRwTref");
+    const naClOut = document.getElementById("petroNaCl");
+    const tdsOut = document.getElementById("petroTDS");
+
+    let F = NaN, Rw_depth = NaN, Rw_tref = NaN, nacl = NaN;
+    if (isFinite(phi) && phi > 0 && phi < 1) F = rock.F(phi);
+    if (isFinite(F) && F > 0 && isFinite(Rt) && Rt > 0) Rw_depth = Rt / F;
+    if (isFinite(Rw_depth) && isFinite(Tref) && isFinite(Tdepth)) Rw_tref = arpsRw(Rw_depth, Tdepth, Tref);
+    if (isFinite(Rw_depth) && isFinite(Tref) && isFinite(Tdepth)) nacl = petroComputeNaCl(Rw_depth, Tref, Tdepth);
+
+    Fout.textContent        = isFinite(F) ? petroFormatNum(F, 2) : "—";
+    RwDepthOut.textContent  = isFinite(Rw_depth) ? petroFormatNum(Rw_depth, 3) : "—";
+    RwTrefOut.textContent   = isFinite(Rw_tref) ? petroFormatNum(Rw_tref, 3) : "—";
+    naClOut.textContent     = petroFormatPpm(nacl);
+    tdsOut.textContent      = petroFormatPpm(nacl);
+
+    // Sensitivity table: rows = FF methods, cols = SENS_PHIS
+    const head = document.getElementById("petroSensHead");
+    const body = document.getElementById("petroSensBody");
+    if (!head || !body) return;
+
+    // Find nearest sensitivity column to current phi (rounded to nearest 5%).
+    let activeColIdx = -1;
+    if (isFinite(phi)) {
+      let best = Infinity;
+      SENS_PHIS.forEach((p, i) => {
+        const d = Math.abs(p - phi);
+        if (d < best) { best = d; activeColIdx = i; }
+      });
+      // Only highlight if within 2.5% of a column value (otherwise no match)
+      if (Math.abs(SENS_PHIS[activeColIdx] - phi) > 0.025) activeColIdx = -1;
+    }
+
+    head.innerHTML = '<th class="row-label">Rock type / F</th>' +
+      SENS_PHIS.map((p, i) =>
+        `<th class="${i === activeColIdx ? "current" : ""}">φ = ${(p * 100).toFixed(0)}%</th>`
+      ).join("");
+
+    const rowsHtml = FF_METHODS.map(m => {
+      const isActiveRow = m.id === rockId;
+      const labelCell =
+        `<td class="row-label" style="${isActiveRow ? "background:var(--brand-light); font-weight:600;" : ""}">` +
+        `<div>${m.name}</div>` +
+        `<div style="font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-top:2px;">${m.eq}</div>` +
+        `</td>`;
+      const cells = SENS_PHIS.map((p, ci) => {
+        let Fc = NaN, Rwd = NaN, naClC = NaN;
+        if (p > 0 && p < 1) Fc = m.F(p);
+        if (isFinite(Fc) && Fc > 0 && isFinite(Rt) && Rt > 0) Rwd = Rt / Fc;
+        if (isFinite(Rwd) && isFinite(Tref) && isFinite(Tdepth)) naClC = petroComputeNaCl(Rwd, Tref, Tdepth);
+        const isAnchor = isActiveRow && ci === activeColIdx;
+        const classes = [];
+        if (isAnchor)             classes.push("current");
+        else if (ci === activeColIdx) classes.push("current");
+        const style = isAnchor ? "background:var(--brand); color:#fff; font-weight:700;" : "";
+        return `<td class="${classes.join(" ")}" style="${style}">${petroFormatPpm(naClC)}</td>`;
+      }).join("");
+      return `<tr>${labelCell}${cells}</tr>`;
+    }).join("");
+    body.innerHTML = rowsHtml;
+  }
+
+  // Wire all petro inputs and toggles
+  ["petroSurfT","petroBHT","petroTD","petroGradIn","petroTarget","petroRt","petroPhi","petroTref"]
+    .forEach(id => document.getElementById(id).oninput = updatePetro);
+  document.getElementById("petroPhiUnit").onchange = updatePetro;
+  document.getElementById("petroRock").onchange = updatePetro;
+  document.querySelectorAll('input[name="petroTMode"]').forEach(r => r.onchange = updatePetro);
+  document.querySelectorAll('input[name="petroSalCorr"]').forEach(r => r.onchange = updatePetro);
+  updatePetro();
 </script>
 </body>
 </html>
