@@ -1278,6 +1278,9 @@
   // initialization and synchronously invokes updateEcon(), which references this constant.
   // Leaving the declaration further down would trip a temporal-dead-zone ReferenceError on first run.
   const NPV_PROFILE_RATES = [2, 5, 8, 10, 12, 15, 20, 30, 40, 50];
+  // Same hoisting requirement as NPV_PROFILE_RATES above — referenced inside buildSensitivity,
+  // which is reached during the synchronous updateArps() → updateEcon() init at the line below.
+  const SENS_PRICES = [40, 50, 60, 70, 80, 90, 100, 110, 120, 130];
   function updateArps() {
     const qi    = parseFloat(document.getElementById("arpQi").value);
     const Di    = parseFloat(document.getElementById("arpDi").value);
@@ -1534,8 +1537,8 @@
     else if (v < posIfGT) el.classList.add("neg");
   }
 
-  // Oil price sensitivity grid.
-  const SENS_PRICES = [40, 50, 60, 70, 80, 90, 100, 110, 120, 130];
+  // Oil price sensitivity grid. (SENS_PRICES is declared near arpsAnnual to avoid a TDZ trap
+  // when updateArps() runs at init and reaches buildSensitivity via updateEcon.)
   function buildSensitivity(baseParams, currentPrice) {
     const head = document.getElementById("ecSensHead");
     const body = document.getElementById("ecSensBody");
