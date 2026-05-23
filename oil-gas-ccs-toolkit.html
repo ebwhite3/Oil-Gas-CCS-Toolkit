@@ -340,40 +340,77 @@
     <div class="card">
       <h2>Project Economics</h2>
       <p style="font-size:0.85rem;color:var(--muted);margin:0 0 0.5rem 0;">
-        Uses the Arps annual production above. CAPEX hits at t=0; abandonment hits at economic limit (last year).
+        Uses the Arps annual production above. CAPEX hits at t=0; abandonment hits at the last positive-CF year.
+        Dollar inputs/outputs are in $M (thousands, petroleum convention).
       </p>
       <div class="row3">
         <div><label>Oil price ($/bbl, flat)</label><input type="number" id="ecPrice" value="70" step="any"></div>
-        <div><label>OPEX fixed ($/month, per well)</label><input type="number" id="ecOpexFixed" value="3000" step="any"></div>
-        <div><label>OPEX variable ($/bbl)</label><input type="number" id="ecOpexVar" value="6" step="any"></div>
+        <div><label>Gas price ($/Mcf, flat)</label><input type="number" id="ecGasPrice" value="3.00" step="any"></div>
+        <div><label>GOR (scf/bbl)</label><input type="number" id="ecGOR" value="800" step="any"></div>
       </div>
       <div class="row3" style="margin-top:0.5rem;">
-        <div><label>CAPEX ($, at t=0)</label><input type="number" id="ecCapex" value="6000000" step="any"></div>
-        <div><label>Abandonment ($, at ECL)</label><input type="number" id="ecAbandon" value="100000" step="any"></div>
+        <div><label>OPEX fixed ($M/month, per well)</label><input type="number" id="ecOpexFixed" value="3.00" step="any"></div>
+        <div><label>OPEX variable ($/bbl oil)</label><input type="number" id="ecOpexVar" value="6" step="any"></div>
         <div><label>Discount rate (%/yr)</label><input type="number" id="ecDisc" value="10" step="any"></div>
+      </div>
+      <div class="row3" style="margin-top:0.5rem;">
+        <div><label>CAPEX ($M, at t=0)</label><input type="number" id="ecCapex" value="6000" step="any"></div>
+        <div><label>Abandonment ($M, at ECL)</label><input type="number" id="ecAbandon" value="100" step="any"></div>
+        <div></div>
       </div>
       <div class="row" style="margin-top:0.5rem;">
         <div><label>Working interest WI (%)</label><input type="number" id="ecWI" value="100" step="any"></div>
         <div><label>Net revenue interest NRI (%)</label><input type="number" id="ecNRI" value="80" step="any"></div>
       </div>
       <div class="result">
-        Gross production = <span class="value" id="ecGross">—</span> bbl &nbsp;|&nbsp;
-        Net to WI (sales) = <span class="value" id="ecNet">—</span> bbl
+        Gross oil = <span class="value" id="ecGross">—</span> bbl &nbsp;|&nbsp;
+        Net oil to WI = <span class="value" id="ecNet">—</span> bbl
       </div>
       <div class="result" style="margin-top:0.4rem;">
-        Gross revenue = $<span class="value" id="ecRev">—</span> &nbsp;|&nbsp;
-        Total OPEX (WI share) = $<span class="value" id="ecOpex">—</span>
+        Gross gas EUR = <span class="value" id="ecGrossGas">—</span> MMcf &nbsp;|&nbsp;
+        Net gas to WI = <span class="value" id="ecNetGas">—</span> MMcf
       </div>
       <div class="result" style="margin-top:0.4rem;">
-        Undiscounted net CF = $<span class="value" id="ecCF">—</span> &nbsp;|&nbsp;
-        NPV @ disc rate = $<span class="value" id="ecNPV">—</span>
+        Oil revenue = $<span class="value" id="ecOilRev">—</span> M &nbsp;|&nbsp;
+        Gas revenue = $<span class="value" id="ecGasRev">—</span> M &nbsp;|&nbsp;
+        Total OPEX (WI) = $<span class="value" id="ecOpex">—</span> M
       </div>
       <div class="result" style="margin-top:0.4rem;">
-        Payout = <span class="value" id="ecPayout">—</span> yr
+        Undisc net CF = $<span class="value" id="ecCF">—</span> M &nbsp;|&nbsp;
+        NPV @ disc rate = $<span class="value" id="ecNPV">—</span> M
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Payout = <span class="value" id="ecPayout">—</span> yr &nbsp;|&nbsp;
+        IRR = <span class="value" id="ecIRR">—</span> % &nbsp;|&nbsp;
+        MOIC = <span class="value" id="ecMOIC">—</span>x
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        ROI (undisc) = <span class="value" id="ecROIu">—</span> &nbsp;|&nbsp;
+        ROI (disc) = <span class="value" id="ecROId">—</span> &nbsp;|&nbsp;
+        Break-even oil = $<span class="value" id="ecBE">—</span>/bbl
+      </div>
+      <div class="result" style="margin-top:0.4rem;">
+        Peak cash exposure = $<span class="value" id="ecPeak">—</span> M
+      </div>
+      <div class="result" style="margin-top:0.4rem;font-size:0.85rem;color:var(--muted);">
+        Economic life = <span class="value" id="ecLife">—</span> yr
+        (terminated by <span id="ecTermReason">—</span>; q at term = <span id="ecQterm">—</span> bbl/d)
+      </div>
+      <div class="result" style="margin-top:0.6rem;">
+        <div style="font-weight:600;margin-bottom:0.25rem;">NPV Profile ($M)</div>
+        <table id="ecNPVProfile" style="border-collapse:collapse;font-size:0.9rem;">
+          <thead><tr id="ecNPVProfileHead"></tr></thead>
+          <tbody><tr id="ecNPVProfileBody"></tr></tbody>
+        </table>
       </div>
       <div class="formula">
-        Per year: Revenue = NRI · Q · price; OPEX = WI · (12·Fixed·Δt + Q · Variable); CF = Revenue − OPEX (− WI·Abandon on final year).
+        Per year: Oil rev = NRI · Q<sub>oil</sub> · P<sub>oil</sub>; Gas rev = NRI · (Q<sub>oil</sub>·GOR/1000) · P<sub>gas</sub>;
+        OPEX = WI · (12·Fixed·Δt + Q<sub>oil</sub> · Variable); CF = Oil rev + Gas rev − OPEX.
         Cash-out at t=0: −WI·CAPEX. NPV = −WI·CAPEX + Σ CF<sub>y</sub>/(1+d)<sup>y</sup>.
+        Project life ends at the earlier of (a) q<sub>econ</sub> rate floor or (b) last year where rev − opex &gt; 0;
+        abandonment is booked on that final year. Break-even oil holds gas price, GOR, and economic life fixed.
+        Gas is treated as associated production via constant GOR with no incremental OPEX. ROI follows PHDWin
+        convention: ROI<sub>undisc</sub> = cumCF / (WI·CAPEX), ROI<sub>disc</sub> = NPV / (WI·CAPEX).
       </div>
     </div>
   </section>
@@ -918,7 +955,11 @@
   }
 
   // ========== Arps Decline ==========
-  let arpsAnnual = [];   // [{tEnd, Q, dt}] — year-by-year production for econ
+  let arpsAnnual = [];   // [{tEnd, Q, dt, qInst}] — year-by-year production for econ
+  // Declared here (not in the Economics block below) because updateArps() is called during
+  // initialization and synchronously invokes updateEcon(), which references this constant.
+  // Leaving the declaration further down would trip a temporal-dead-zone ReferenceError on first run.
+  const NPV_PROFILE_RATES = [2, 5, 8, 10, 12, 15, 20, 30, 40, 50];
   function updateArps() {
     const qi    = parseFloat(document.getElementById("arpQi").value);
     const Di    = parseFloat(document.getElementById("arpDi").value);
@@ -1002,13 +1043,13 @@
     const wholeYears = Math.floor(tEnd);
     let prevNp = 0;
     for (let y = 1; y <= wholeYears; y++) {
-      const Np = calc(y).Np;
-      arpsAnnual.push({ tEnd: y, Q: Np - prevNp, dt: 1 });
-      prevNp = Np;
+      const r = calc(y);
+      arpsAnnual.push({ tEnd: y, Q: r.Np - prevNp, dt: 1, qInst: r.q });
+      prevNp = r.Np;
     }
     if (tEnd - wholeYears > 1e-6) {
-      const Np = calc(tEnd).Np;
-      arpsAnnual.push({ tEnd: tEnd, Q: Np - prevNp, dt: tEnd - wholeYears });
+      const r = calc(tEnd);
+      arpsAnnual.push({ tEnd: tEnd, Q: r.Np - prevNp, dt: tEnd - wholeYears, qInst: r.q });
     }
     updateEcon();
   }
@@ -1039,51 +1080,153 @@
   fromGas();
 
   // ========== Project Economics ==========
+  // Format dollars in $M (thousands), 2 decimals, with thousands separators.
+  function fmtM(x) {
+    if (!isFinite(x)) return "—";
+    const v = x / 1000;
+    return v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  // IRR via bisection on cfArray (cfs[0] = -capex at t=0, cfs[i>0] at year-end of active[i-1]).
+  function computeIRR(cfs, times) {
+    if (!cfs || cfs.length < 2) return null;
+    const npv = r => cfs.reduce((s, cf, i) => s + cf / Math.pow(1 + r, times[i]), 0);
+    let sumPos = 0, sumNeg = 0;
+    for (const x of cfs) { if (x > 0) sumPos += x; else if (x < 0) sumNeg += x; }
+    if (sumPos === 0 || sumNeg === 0) return null;
+    if (sumPos + sumNeg <= 0) return null;          // undiscounted total ≤ 0 → no positive IRR
+    let signChanges = 0, prev = 0;
+    for (const x of cfs) { const s = Math.sign(x); if (s !== 0) { if (prev !== 0 && s !== prev) signChanges++; prev = s; } }
+    let lo = -0.9999, hi = 1.0, fHi = npv(hi), guard = 0;
+    while (fHi > 0 && guard++ < 50) { hi *= 2; fHi = npv(hi); }
+    if (fHi > 0) return { value: hi, capped: true, signChanges };
+    for (let it = 0; it < 200; it++) {
+      const mid = 0.5 * (lo + hi);
+      const fMid = npv(mid);
+      if (Math.abs(fMid) < 1e-6 || (hi - lo) < 1e-10) return { value: mid, capped: false, signChanges };
+      if (fMid > 0) lo = mid; else hi = mid;
+    }
+    return { value: 0.5 * (lo + hi), capped: false, signChanges };
+  }
+  // Build NPV profile table header once.
+  (function buildNPVProfileHead() {
+    const head = document.getElementById("ecNPVProfileHead");
+    if (!head) return;
+    head.innerHTML = NPV_PROFILE_RATES.map(r =>
+      `<th style="padding:0.25rem 0.6rem;border:1px solid var(--border);text-align:right;">${r}%</th>`
+    ).join("");
+  })();
+
   function updateEcon() {
-    const price   = parseFloat(document.getElementById("ecPrice").value);
-    const opexFx  = parseFloat(document.getElementById("ecOpexFixed").value);
-    const opexVr  = parseFloat(document.getElementById("ecOpexVar").value);
-    const capex   = parseFloat(document.getElementById("ecCapex").value);
-    const abandon = parseFloat(document.getElementById("ecAbandon").value);
-    const disc    = parseFloat(document.getElementById("ecDisc").value)/100;
-    const wi      = parseFloat(document.getElementById("ecWI").value)/100;
-    const nri     = parseFloat(document.getElementById("ecNRI").value)/100;
+    const price    = parseFloat(document.getElementById("ecPrice").value);
+    const gasPrice = parseFloat(document.getElementById("ecGasPrice").value);
+    const gor      = parseFloat(document.getElementById("ecGOR").value);
+    const opexFxM  = parseFloat(document.getElementById("ecOpexFixed").value);   // $M/mo
+    const opexVr   = parseFloat(document.getElementById("ecOpexVar").value);     // $/bbl
+    const capexM   = parseFloat(document.getElementById("ecCapex").value);       // $M
+    const abandonM = parseFloat(document.getElementById("ecAbandon").value);     // $M
+    const disc     = parseFloat(document.getElementById("ecDisc").value)/100;
+    const wi       = parseFloat(document.getElementById("ecWI").value)/100;
+    const nri      = parseFloat(document.getElementById("ecNRI").value)/100;
+
+    const opexFx = opexFxM * 1000;     // $/mo
+    const capex  = capexM  * 1000;     // $
+    const abandon = abandonM * 1000;   // $
+
     const out = {
       gross: document.getElementById("ecGross"),
       net:   document.getElementById("ecNet"),
-      rev:   document.getElementById("ecRev"),
+      grossGas: document.getElementById("ecGrossGas"),
+      netGas:   document.getElementById("ecNetGas"),
+      oilRev:   document.getElementById("ecOilRev"),
+      gasRev:   document.getElementById("ecGasRev"),
       opex:  document.getElementById("ecOpex"),
       cf:    document.getElementById("ecCF"),
       npv:   document.getElementById("ecNPV"),
       pay:   document.getElementById("ecPayout"),
+      irr:   document.getElementById("ecIRR"),
+      moic:  document.getElementById("ecMOIC"),
+      roiU:  document.getElementById("ecROIu"),
+      roiD:  document.getElementById("ecROId"),
+      be:    document.getElementById("ecBE"),
+      peak:  document.getElementById("ecPeak"),
+      life:  document.getElementById("ecLife"),
+      term:  document.getElementById("ecTermReason"),
+      qterm: document.getElementById("ecQterm"),
+      profile: document.getElementById("ecNPVProfileBody"),
     };
-    if ([price,opexFx,opexVr,capex,abandon,disc,wi,nri].some(isNaN) || arpsAnnual.length === 0) {
-      Object.values(out).forEach(e => e.textContent = "—");
+    const inputs = [price,gasPrice,gor,opexFxM,opexVr,capexM,abandonM,disc,wi,nri];
+    if (inputs.some(isNaN) || arpsAnnual.length === 0) {
+      Object.values(out).forEach(e => { if (e) e.textContent = "—"; });
+      if (out.profile) out.profile.innerHTML = "";
       return;
     }
 
-    let totalGross = 0, totalNet = 0, totalRev = 0, totalOpex = 0;
+    // Pass 1: build raw per-year schedule with oil + gas streams.
+    const sched = arpsAnnual.map(a => {
+      const Qoil = a.Q;
+      const Qgas = Qoil * gor / 1000;          // Mcf
+      const netOil = Qoil * nri;
+      const netGas = Qgas * nri;
+      const oilRev = netOil * price;
+      const gasRev = netGas * gasPrice;
+      const rev    = oilRev + gasRev;
+      const opex   = wi * (12 * opexFx * a.dt + Qoil * opexVr);
+      return { tEnd: a.tEnd, dt: a.dt, qInst: a.qInst, Qoil, Qgas, netOil, netGas, oilRev, gasRev, rev, opex, opCF: rev - opex };
+    });
+
+    // Find last year with positive operating CF (rev - opex > 0); stop at first non-positive.
+    let lastIdx = -1;
+    for (let i = 0; i < sched.length; i++) {
+      if (sched[i].opCF > 0) lastIdx = i; else break;
+    }
+
+    // Termination reason + rate at termination.
+    let termReason, qAtTerm;
+    if (lastIdx < 0) {
+      termReason = "never economic (CF<0 from year 1)";
+      qAtTerm = sched.length ? sched[0].qInst : 0;
+    } else if (lastIdx === sched.length - 1) {
+      termReason = "rate limit (qEcon)";
+      qAtTerm = sched[lastIdx].qInst;
+    } else {
+      termReason = "cash flow limit (rev−opex < 0)";
+      qAtTerm = sched[lastIdx].qInst;
+    }
+    const active = lastIdx >= 0 ? sched.slice(0, lastIdx + 1) : [];
+
+    // Pass 2: accumulate cash flow, with abandonment on the final accepted year.
+    const cfArray = [-wi * capex];
+    const tArray  = [0];
     let cumCF = -wi * capex;
     let npv   = -wi * capex;
+    let peakDrawdown = cumCF;
     let payout = null;
+    let totalOil = 0, totalNetOil = 0, totalGas = 0, totalNetGas = 0;
+    let totalOilRev = 0, totalGasRev = 0, totalOpex = 0;
+    let discOilNet = 0;  // Σ netOil_i / (1+disc)^t_i — for break-even oil price
 
-    for (let i = 0; i < arpsAnnual.length; i++) {
-      const a = arpsAnnual[i];
-      const isLast = (i === arpsAnnual.length - 1);
-      const netQ = a.Q * nri;
-      const rev  = netQ * price;
-      const opex = wi * (12 * opexFx * a.dt + a.Q * opexVr);
-      let cf = rev - opex;
+    for (let i = 0; i < active.length; i++) {
+      const a = active[i];
+      const isLast = (i === active.length - 1);
+      let cf = a.opCF;
       if (isLast) cf -= wi * abandon;
+
+      cfArray.push(cf);
+      tArray.push(a.tEnd);
 
       const prevCum = cumCF;
       cumCF += cf;
       npv   += cf / Math.pow(1 + disc, a.tEnd);
+      if (cumCF < peakDrawdown) peakDrawdown = cumCF;
 
-      totalGross += a.Q;
-      totalNet   += netQ;
-      totalRev   += rev;
-      totalOpex  += opex;
+      totalOil    += a.Qoil;
+      totalNetOil += a.netOil;
+      totalGas    += a.Qgas;
+      totalNetGas += a.netGas;
+      totalOilRev += a.oilRev;
+      totalGasRev += a.gasRev;
+      totalOpex   += a.opex;
+      discOilNet  += a.netOil / Math.pow(1 + disc, a.tEnd);
 
       if (payout === null && cumCF > 0 && cf > 0) {
         const tStart = a.tEnd - a.dt;
@@ -1091,15 +1234,61 @@
       }
     }
 
-    out.gross.textContent = formatNumber(totalGross);
-    out.net.textContent   = formatNumber(totalNet);
-    out.rev.textContent   = formatNumber(totalRev);
-    out.opex.textContent  = formatNumber(totalOpex);
-    out.cf.textContent    = formatNumber(cumCF);
-    out.npv.textContent   = formatNumber(npv);
-    out.pay.textContent   = (payout !== null) ? payout.toFixed(2) : "never";
+    // IRR
+    const irr = computeIRR(cfArray, tArray);
+
+    // MOIC (robust): Σ positive CFs / Σ |negative CFs|.
+    let invested = 0, returned = 0;
+    for (const x of cfArray) { if (x > 0) returned += x; else if (x < 0) invested += -x; }
+    const moic = invested > 0 ? returned / invested : null;
+
+    // ROI (PHDWin convention)
+    const investBase = wi * capex;
+    const roiU = investBase > 0 ? cumCF / investBase : null;
+    const roiD = investBase > 0 ? npv   / investBase : null;
+
+    // Break-even oil price: NPV is linear in oil price; gas, opex, capex, abandon held constant.
+    //   NPV(price) = (npv − price·discOilNet) + price·discOilNet  ⇒  BE = price − npv / discOilNet
+    const be = discOilNet > 0 ? (price - npv / discOilNet) : null;
+
+    // Output
+    out.gross.textContent    = formatNumber(totalOil);
+    out.net.textContent      = formatNumber(totalNetOil);
+    out.grossGas.textContent = (totalGas / 1000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    out.netGas.textContent   = (totalNetGas / 1000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    out.oilRev.textContent   = fmtM(totalOilRev);
+    out.gasRev.textContent   = fmtM(totalGasRev);
+    out.opex.textContent     = fmtM(totalOpex);
+    out.cf.textContent       = fmtM(cumCF);
+    out.npv.textContent      = fmtM(npv);
+    out.pay.textContent      = (payout !== null) ? payout.toFixed(2) : "never";
+
+    if (irr === null) {
+      out.irr.textContent = "n/a";
+    } else if (irr.capped) {
+      out.irr.textContent = ">1000" + (irr.signChanges > 1 ? "*" : "");
+    } else {
+      out.irr.textContent = (irr.value * 100).toFixed(1) + (irr.signChanges > 1 ? "*" : "");
+    }
+    out.moic.textContent = moic !== null ? moic.toFixed(2) : "n/a";
+    out.roiU.textContent = roiU !== null ? roiU.toFixed(2) : "n/a";
+    out.roiD.textContent = roiD !== null ? roiD.toFixed(2) : "n/a";
+    out.be.textContent   = be   !== null && isFinite(be) ? be.toFixed(2) : "n/a";
+    out.peak.textContent = fmtM(peakDrawdown);
+    out.life.textContent = active.length ? active[active.length - 1].tEnd.toFixed(2) : "0.00";
+    out.term.textContent = termReason;
+    out.qterm.textContent = formatNumber(qAtTerm);
+
+    // NPV profile across discount rates.
+    if (out.profile) {
+      out.profile.innerHTML = NPV_PROFILE_RATES.map(rPct => {
+        const r = rPct / 100;
+        const npvR = cfArray.reduce((s, cf, i) => s + cf / Math.pow(1 + r, tArray[i]), 0);
+        return `<td style="padding:0.25rem 0.6rem;border:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums;">${fmtM(npvR)}</td>`;
+      }).join("");
+    }
   }
-  ["ecPrice","ecOpexFixed","ecOpexVar","ecCapex","ecAbandon","ecDisc","ecWI","ecNRI"]
+  ["ecPrice","ecGasPrice","ecGOR","ecOpexFixed","ecOpexVar","ecCapex","ecAbandon","ecDisc","ecWI","ecNRI"]
     .forEach(id => document.getElementById(id).oninput = updateEcon);
   updateEcon();
 
