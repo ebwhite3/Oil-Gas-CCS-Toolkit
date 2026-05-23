@@ -543,7 +543,7 @@
         Recoverable = <span class="value" id="ooipRec">—</span> STB &nbsp;|&nbsp;
         <span class="value" id="ooipRecMM">—</span> MMSTB
       </div>
-      <div class="formula">N = 7758 · A · h · NG · φ · (1−S<sub>w</sub>) / B<sub>oi</sub>  (7758 bbl per acre-ft). Recoverable = N · RF.</div>
+      <div class="formula">N = 7758 · A · h · NG · ϕ · (1−S<sub>w</sub>) / B<sub>oi</sub>  (7758 bbl per acre-ft). Recoverable = N · RF.</div>
     </div>
 
     <div class="card">
@@ -562,7 +562,7 @@
         OGIP = <span class="value" id="ogipOut">—</span> scf &nbsp;|&nbsp;
         <span class="value" id="ogipOutBcf">—</span> Bcf
       </div>
-      <div class="formula">G = 43,560 · A · h · NG · φ · (1−S<sub>w</sub>) / B<sub>gi</sub>  (43,560 ft³ per acre-ft). 1 Bcf = 10⁹ scf.</div>
+      <div class="formula">G = 43,560 · A · h · NG · ϕ · (1−S<sub>w</sub>) / B<sub>gi</sub>  (43,560 ft³ per acre-ft). 1 Bcf = 10⁹ scf.</div>
     </div>
 
     <div class="card">
@@ -787,11 +787,11 @@
 
     <div class="card">
       <h2>Storage Capacity (DOE/NETL Volumetric)</h2>
-      <p>G<sub>CO₂</sub> = A · h · φ · (1 − S<sub>wirr</sub>) · ρ<sub>CO₂</sub> · E. Per Goodman et al. (2011) / DOE-NETL Carbon Storage Atlas methodology.</p>
+      <p>G<sub>CO₂</sub> = A · h · ϕ · (1 − S<sub>wirr</sub>) · ρ<sub>CO₂</sub> · E. Per Goodman et al. (2011) / DOE-NETL Carbon Storage Atlas methodology.</p>
       <div class="row3">
         <div><label>Area A (acres)</label><input type="number" id="sc-A" value="1000" step="any"></div>
         <div><label>Net thickness h (ft)</label><input type="number" id="sc-h" value="100" step="any"></div>
-        <div><label>Porosity φ (%)</label><input type="number" id="sc-phi" value="20" step="any"></div>
+        <div><label>Porosity ϕ (%)</label><input type="number" id="sc-phi" value="20" step="any"></div>
       </div>
       <div class="row3" style="margin-top:0.5rem;">
         <div><label>S<sub>wirr</sub> (%)</label><input type="number" id="sc-Swirr" value="30" step="any"></div>
@@ -858,7 +858,7 @@
         <div><label>Net thickness h (ft)</label><input type="number" id="pr-h" value="100" step="any"></div>
       </div>
       <div class="row" style="margin-top:0.5rem;">
-        <div><label>Porosity φ (%)</label><input type="number" id="pr-phi" value="20" step="any"></div>
+        <div><label>Porosity ϕ (%)</label><input type="number" id="pr-phi" value="20" step="any"></div>
         <div><label>S<sub>wirr</sub> (%)</label><input type="number" id="pr-Swirr" value="30" step="any"></div>
       </div>
       <div class="result">
@@ -866,7 +866,7 @@
         <span class="value" id="pr-rM">—</span> m
       </div>
       <div class="formula">
-        r = √[ (M / ρ<sub>CO₂</sub>) / (π · h · φ · (1 − S<sub>wirr</sub>)) ]. Screening only.
+        r = √[ (M / ρ<sub>CO₂</sub>) / (π · h · ϕ · (1 − S<sub>wirr</sub>)) ]. Screening only.
       </div>
     </div>
 
@@ -895,7 +895,7 @@
       <h2>Resistivity → Porosity → Salinity</h2>
       <p>
         Petrophysical salinity estimate from log resistivity. Estimates formation water resistivity (R<sub>w</sub>)
-        from R<sub>t</sub> and φ via a formation factor (F = R<sub>o</sub>/R<sub>w</sub>) relationship, corrects
+        from R<sub>t</sub> and ϕ via a formation factor (F = R<sub>o</sub>/R<sub>w</sub>) relationship, corrects
         R<sub>w</sub> to a reference temperature with Arps (1953), and converts to NaCl-equivalent salinity.
         Used for Class VI CCS and Class II UIC USDW characterization.
       </p>
@@ -932,7 +932,7 @@
       <div class="row3">
         <div><label>True resistivity, R<sub>t</sub> (ohm-m)</label><input type="number" id="petroRt" value="3.8" step="any"></div>
         <div>
-          <label>Porosity, φ</label>
+          <label>Porosity, ϕ</label>
           <div style="display:flex; gap:6px;">
             <input type="number" id="petroPhi" value="30" step="any" style="flex:1;">
             <select id="petroPhiUnit" style="width:auto; padding-right: 22px;">
@@ -986,10 +986,10 @@
         <div class="kv"><div class="k">Estimated TDS</div><div class="v" id="petroTDS">—</div><div class="k">ppm (NaCl-eq)</div></div>
       </div>
 
-      <div class="section-label" style="margin-top:18px;">6. Sensitivity — NaCl (ppm) vs. φ and formation factor method</div>
+      <div class="section-label" style="margin-top:18px;">6. Sensitivity — NaCl (ppm) vs. ϕ and formation factor method</div>
       <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
         R<sub>t</sub>, depth temperature, and T<sub>ref</sub> held constant.
-        Active row (selected rock type) and active column (current φ rounded to nearest 5%) are tinted.
+        Active row (selected rock type) and active column (current ϕ rounded to nearest 5%) are tinted.
         Intersection cell is the base-case anchor.
         <span id="petroSensCorrCaption">Active correlation: Gen-9.</span>
       </p>
@@ -1015,7 +1015,7 @@
       </details>
 
       <div class="formula">
-        Workflow: F is computed from φ using the selected rock-type relationship → R<sub>w</sub> at depth T = R<sub>t</sub>/F →
+        Workflow: F is computed from ϕ using the selected rock-type relationship → R<sub>w</sub> at depth T = R<sub>t</sub>/F →
         R<sub>w</sub> at T<sub>ref</sub> via Arps → NaCl via active correlation. All inputs are live; the sensitivity table
         recomputes on every change.
       </div>
@@ -2305,16 +2305,16 @@
   // Resistivity → Porosity → Salinity
   // ============================================================
   const FF_METHODS = [
-    { id: "carb_archie",   name: "Carbonates (Archie m=2)",                eq: "F = 1/φ²",            F: phi => 1 / Math.pow(phi, 2) },
-    { id: "cons_humble",   name: "Consolidated sandstones (Humble simp.)", eq: "F = 0.81/φ²",         F: phi => 0.81 / Math.pow(phi, 2) },
-    { id: "uncons_humble", name: "Unconsolidated sands (Humble)",          eq: "F = 0.62/φ^2.15",     F: phi => 0.62 / Math.pow(phi, 2.15) },
-    { id: "avg_sands",     name: "Average sands",                          eq: "F = 1.45/φ^1.54",     F: phi => 1.45 / Math.pow(phi, 1.54) },
-    { id: "shaly",         name: "Shaly sands",                            eq: "F = 1.65/φ^1.33",     F: phi => 1.65 / Math.pow(phi, 1.33) },
-    { id: "calc",          name: "Calcareous sands",                       eq: "F = 1.45/φ^1.70",     F: phi => 1.45 / Math.pow(phi, 1.70) },
-    { id: "carb_alt",      name: "Carbonates (alternate)",                 eq: "F = 0.85/φ^2.14",     F: phi => 0.85 / Math.pow(phi, 2.14) },
-    { id: "pliocene",      name: "Pliocene sands",                         eq: "F = 2.45/φ^1.08",     F: phi => 2.45 / Math.pow(phi, 1.08) },
-    { id: "miocene",       name: "Miocene sands",                          eq: "F = 1.97/φ^1.29",     F: phi => 1.97 / Math.pow(phi, 1.29) },
-    { id: "sethi",         name: "Clean granular (Sethi)",                 eq: "F = 1.0/φ^(2.05−φ)",  F: phi => 1 / Math.pow(phi, 2.05 - phi) },
+    { id: "carb_archie",   name: "Carbonates (Archie m=2)",                eq: "F = 1/ϕ²",            F: phi => 1 / Math.pow(phi, 2) },
+    { id: "cons_humble",   name: "Consolidated sandstones (Humble simp.)", eq: "F = 0.81/ϕ²",         F: phi => 0.81 / Math.pow(phi, 2) },
+    { id: "uncons_humble", name: "Unconsolidated sands (Humble)",          eq: "F = 0.62/ϕ^2.15",     F: phi => 0.62 / Math.pow(phi, 2.15) },
+    { id: "avg_sands",     name: "Average sands",                          eq: "F = 1.45/ϕ^1.54",     F: phi => 1.45 / Math.pow(phi, 1.54) },
+    { id: "shaly",         name: "Shaly sands",                            eq: "F = 1.65/ϕ^1.33",     F: phi => 1.65 / Math.pow(phi, 1.33) },
+    { id: "calc",          name: "Calcareous sands",                       eq: "F = 1.45/ϕ^1.70",     F: phi => 1.45 / Math.pow(phi, 1.70) },
+    { id: "carb_alt",      name: "Carbonates (alternate)",                 eq: "F = 0.85/ϕ^2.14",     F: phi => 0.85 / Math.pow(phi, 2.14) },
+    { id: "pliocene",      name: "Pliocene sands",                         eq: "F = 2.45/ϕ^1.08",     F: phi => 2.45 / Math.pow(phi, 1.08) },
+    { id: "miocene",       name: "Miocene sands",                          eq: "F = 1.97/ϕ^1.29",     F: phi => 1.97 / Math.pow(phi, 1.29) },
+    { id: "sethi",         name: "Clean granular (Sethi)",                 eq: "F = 1.0/ϕ^(2.05−ϕ)",  F: phi => 1 / Math.pow(phi, 2.05 - phi) },
   ];
   const SENS_PHIS = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40];
 
@@ -2457,7 +2457,7 @@
 
     head.innerHTML = '<th class="row-label">Rock type / F</th>' +
       SENS_PHIS.map((p, i) =>
-        `<th class="${i === activeColIdx ? "current" : ""}">φ = ${(p * 100).toFixed(0)}%</th>`
+        `<th class="${i === activeColIdx ? "current" : ""}">ϕ = ${(p * 100).toFixed(0)}%</th>`
       ).join("");
 
     const rowsHtml = FF_METHODS.map(m => {
