@@ -472,37 +472,52 @@
   /* Print-only elements default hidden on screen */
   .print-only { display: none; }
 
-  /* ===== Print rules — single-page permit-ready output ===== */
+  /* ===== Print rules — clean, tab-agnostic permit-ready output =====
+     Tab visibility is governed by section[hidden] (set by the tab-switch
+     handler in JS); these rules only strip chrome and tighten typography.
+     The active tab prints; inactive tabs remain hidden via section[hidden]. */
   @media print {
     @page { size: letter portrait; margin: 0.5in; }
     body { background: #fff; color: #000; font-size: 11px; }
     header, nav.tabs { display: none !important; }
     main { max-width: none; padding: 0; }
-    /* Hide every section except c_t when printing */
-    section:not(#ct) { display: none !important; }
-    #ct { display: flex; flex-direction: column; gap: 12px; }
-    .card { box-shadow: none; border: none; padding: 0; page-break-inside: avoid; }
-    .card h2 { font-size: 14px; padding-bottom: 4px; margin-bottom: 8px; border-bottom: 1px solid #000; }
+    .card { box-shadow: none; border: 1px solid #999; padding: 10px 14px; background: #fff !important; }
+    .card h2 { font-size: 14px; padding-bottom: 4px; margin-bottom: 8px; border-bottom: 1px solid #000; color: #000; }
     .card > p { font-size: 10.5px; margin-bottom: 8px; color: #333; }
     .section-label { font-size: 10px; color: #000; margin: 10px 0 4px 0; }
     .input-helper { font-size: 9px; line-height: 1.35; color: #444; }
-    input, select { border: 1px solid #999 !important; box-shadow: none !important; padding: 4px 6px; font-size: 11px; }
+    label { color: #333; }
+    input, select { border: 1px solid #999 !important; box-shadow: none !important; padding: 4px 6px; font-size: 11px; background: #fff !important; color: #000 !important; }
+    .formula { font-size: 9.5px; color: #444; }
+    /* Result blocks: small must-stay-together cards keep page-break-inside: avoid;
+       larger collections (result-grid, details, tables) flow naturally across pages. */
     .eq-block { background: #f5f5f5 !important; border-color: #999 !important; border-left: 3px solid #000 !important; padding: 10px 12px; font-size: 11px; line-height: 1.6; page-break-inside: avoid; }
     .eq-block .eq-result { font-size: 13px; color: #000; }
     .result-primary { background: #eef4fb !important; border-color: #999 !important; border-left: 3px solid #000 !important; padding: 10px 14px; page-break-inside: avoid; }
     .result-primary .primary { font-size: 18px; color: #000; }
-    .result-grid { gap: 6px 12px; page-break-inside: avoid; }
-    .result-grid .kv { padding: 6px 10px; background: #f7f9fc !important; border-left: 2px solid #1e63b0 !important; }
+    .result { background: #f7f9fc !important; border-left: 2px solid #1e63b0 !important; box-shadow: none; page-break-inside: avoid; }
+    .result-grid { gap: 6px 12px; }
+    .result-grid .kv { padding: 6px 10px; background: #f7f9fc !important; border-left: 2px solid #1e63b0 !important; page-break-inside: avoid; }
     .result-grid .kv.dominant { background: #d6e6f5 !important; border-left-color: #07315f !important; }
+    .result-grid .kv .v { color: #000; }
     .citation-footer { font-size: 9px; color: #333; page-break-inside: avoid; }
-    table th, table td { padding: 3px 6px; font-size: 10px; }
+    /* Tables: rows stay together, but the whole table can flow across pages. */
+    table { width: 100%; }
+    table th, table td { padding: 3px 6px; font-size: 10px; border-color: #999; }
+    table th { background: #e8eef5 !important; color: #000; }
+    tr { page-break-inside: avoid; }
+    thead { display: table-header-group; }  /* repeat header on each printed page */
     details { page-break-inside: avoid; }
-    details > summary { font-size: 11px; font-weight: 600; color: #000; cursor: default; }
+    details > summary { font-weight: 600; color: #000; cursor: default; list-style: none; }
     details ul { font-size: 10px; margin-left: 14px; }
     details li { padding: 1px 0; }
+    /* Plot containers (SVG) print at intrinsic size; let them break across pages if huge. */
+    .plot-container { background: #fff !important; border: 1px solid #999; }
+    .plot-container svg { max-width: 100%; height: auto; }
+    /* Global print header and footer (populated dynamically by JS). */
     .print-only { display: block !important; }
-    .print-header { border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 8px; font-size: 12px; font-weight: 700; }
-    .print-footer { border-top: 1px solid #999; padding-top: 4px; margin-top: 12px; font-size: 9px; color: #444; text-align: right; }
+    .print-header { border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: #000; }
+    .print-footer { border-top: 1px solid #999; padding-top: 4px; margin-top: 14px; font-size: 9px; color: #444; text-align: right; }
   }
 </style>
 </head>
@@ -526,6 +541,7 @@
   <button class="tab" data-tab="ct">Total Compressibility (c<sub>t</sub>)</button>
 </nav>
 <main>
+  <div class="print-only print-header" id="printHeader">NSLLC Toolkit</div>
   <section id="convert">
     <div class="card">
       <h2>Unit Converter</h2>
@@ -1156,7 +1172,6 @@
 
   <section id="ct" hidden>
     <div class="card">
-      <div class="print-only print-header">NSLLC Toolkit — Total Compressibility Calculation</div>
       <h2>Total Compressibility (c<sub>t</sub>)</h2>
       <p>
         Compute total reservoir compressibility c<sub>t</sub> = c<sub>rock</sub> + S<sub>w</sub>·c<sub>w</sub> + S<sub>o</sub>·c<sub>o</sub>
@@ -1291,9 +1306,10 @@
         </ul>
       </details>
 
-      <div class="print-only print-footer">Calculated <span id="ctPrintDate"></span> | Numeric Solutions LLC</div>
     </div>
   </section>
+
+  <div class="print-only print-footer" id="printFooter">Calculated <span id="printDate"></span> | Numeric Solutions LLC</div>
 </main>
 
 <script>
@@ -1376,13 +1392,34 @@
   };
 
   const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs", "petro", "ct"];
+  // Friendly names used for the print-only page header (plain text, no HTML).
+  const tabPrintNames = {
+    convert:     "Unit Converter",
+    calc:        "Fluid & Drilling Calculations",
+    volumetrics: "Volumetrics",
+    decline:     "Decline & Single-Well Economics",
+    ccs:         "CCS Calculations & Conversions",
+    petro:       "Resistivity-Porosity Salinity Calculator",
+    ct:          "Total Compressibility (c_t)",
+  };
+  function setPrintHeaderFor(tabId) {
+    const el = document.getElementById("printHeader");
+    if (!el) return;
+    const name = tabPrintNames[tabId] || "";
+    el.textContent = name ? "NSLLC Toolkit — " + name : "NSLLC Toolkit";
+  }
   document.querySelectorAll("nav.tabs button").forEach(b => {
     b.onclick = () => {
       document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
       b.classList.add("active");
       tabIds.forEach(id => document.getElementById(id).hidden = id !== b.dataset.tab);
+      setPrintHeaderFor(b.dataset.tab);
     };
   });
+  // Initialize header for whichever tab is active at page load (default: convert).
+  setPrintHeaderFor(
+    (document.querySelector("nav.tabs button.active") || {}).dataset?.tab || "convert"
+  );
 
   const catSel   = document.getElementById("cat");
   const fromUnit = document.getElementById("fromUnit");
@@ -2880,13 +2917,13 @@
   }
   ["ctSw","ctSo","ctCrock","ctCw","ctCo"].forEach(id => document.getElementById(id).oninput = updateCt);
 
-  // Populate print-footer date (yyyy-mm-dd) for permit documentation.
-  (function setCtPrintDate() {
+  // Populate global print-footer date (yyyy-mm-dd) for permit documentation.
+  (function setPrintDate() {
     const d = new Date();
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
-    document.getElementById("ctPrintDate").textContent = yyyy + "-" + mm + "-" + dd;
+    document.getElementById("printDate").textContent = yyyy + "-" + mm + "-" + dd;
   })();
   updateCt();
 </script>
