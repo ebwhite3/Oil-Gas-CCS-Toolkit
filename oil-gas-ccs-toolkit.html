@@ -384,6 +384,126 @@
     header { padding: 14px 16px; }
     nav.tabs { padding: 0 16px; }
   }
+
+  /* ===== c_t calculator additions ===== */
+  /* Always-visible italic gray helper text directly under inputs */
+  .input-helper {
+    font-size: 11.5px;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  /* Equation block with substituted numeric values (for screenshot/permit) */
+  .eq-block {
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--brand);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.85;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .eq-block .eq-result {
+    font-weight: 700;
+    color: var(--brand-darker);
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  /* Primary (large) result card for c_t */
+  .result-primary {
+    background: var(--brand-tint);
+    border: 1px solid var(--brand-light);
+    border-left: 4px solid var(--brand);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 12px;
+  }
+  .result-primary .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .result-primary .primary {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--brand-darker);
+    font-variant-numeric: tabular-nums;
+    margin-top: 4px;
+  }
+  .result-primary .secondary {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  /* Dominant component KV card (brand-tinted) */
+  .result-grid .kv.dominant {
+    background: var(--brand-light);
+    border-left-color: var(--brand-dark);
+  }
+  /* Always-visible citation footer attached to results */
+  .citation-footer {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  /* Saturation warning banner */
+  .sat-warn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--warn-bg);
+    color: var(--warn);
+    border-left: 3px solid var(--warn);
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  /* Print-only elements default hidden on screen */
+  .print-only { display: none; }
+
+  /* ===== Print rules — single-page permit-ready output ===== */
+  @media print {
+    @page { size: letter portrait; margin: 0.5in; }
+    body { background: #fff; color: #000; font-size: 11px; }
+    header, nav.tabs { display: none !important; }
+    main { max-width: none; padding: 0; }
+    /* Hide every section except c_t when printing */
+    section:not(#ct) { display: none !important; }
+    #ct { display: flex; flex-direction: column; gap: 12px; }
+    .card { box-shadow: none; border: none; padding: 0; page-break-inside: avoid; }
+    .card h2 { font-size: 14px; padding-bottom: 4px; margin-bottom: 8px; border-bottom: 1px solid #000; }
+    .card > p { font-size: 10.5px; margin-bottom: 8px; color: #333; }
+    .section-label { font-size: 10px; color: #000; margin: 10px 0 4px 0; }
+    .input-helper { font-size: 9px; line-height: 1.35; color: #444; }
+    input, select { border: 1px solid #999 !important; box-shadow: none !important; padding: 4px 6px; font-size: 11px; }
+    .eq-block { background: #f5f5f5 !important; border-color: #999 !important; border-left: 3px solid #000 !important; padding: 10px 12px; font-size: 11px; line-height: 1.6; page-break-inside: avoid; }
+    .eq-block .eq-result { font-size: 13px; color: #000; }
+    .result-primary { background: #eef4fb !important; border-color: #999 !important; border-left: 3px solid #000 !important; padding: 10px 14px; page-break-inside: avoid; }
+    .result-primary .primary { font-size: 18px; color: #000; }
+    .result-grid { gap: 6px 12px; page-break-inside: avoid; }
+    .result-grid .kv { padding: 6px 10px; background: #f7f9fc !important; border-left: 2px solid #1e63b0 !important; }
+    .result-grid .kv.dominant { background: #d6e6f5 !important; border-left-color: #07315f !important; }
+    .citation-footer { font-size: 9px; color: #333; page-break-inside: avoid; }
+    table th, table td { padding: 3px 6px; font-size: 10px; }
+    details { page-break-inside: avoid; }
+    details > summary { font-size: 11px; font-weight: 600; color: #000; cursor: default; }
+    details ul { font-size: 10px; margin-left: 14px; }
+    details li { padding: 1px 0; }
+    .print-only { display: block !important; }
+    .print-header { border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 8px; font-size: 12px; font-weight: 700; }
+    .print-footer { border-top: 1px solid #999; padding-top: 4px; margin-top: 12px; font-size: 9px; color: #444; text-align: right; }
+  }
 </style>
 </head>
 <body>
@@ -403,6 +523,7 @@
   <button class="tab" data-tab="decline">Decline &amp; Econ</button>
   <button class="tab" data-tab="ccs">CCS Calcs &amp; Conversions</button>
   <button class="tab" data-tab="petro">R-P Salinity</button>
+  <button class="tab" data-tab="ct">Total Compressibility (c<sub>t</sub>)</button>
 </nav>
 <main>
   <section id="convert">
@@ -1032,6 +1153,147 @@
       </div>
     </div>
   </section>
+
+  <section id="ct" hidden>
+    <div class="card">
+      <div class="print-only print-header">NSLLC Toolkit — Total Compressibility Calculation</div>
+      <h2>Total Compressibility (c<sub>t</sub>)</h2>
+      <p>
+        Compute total reservoir compressibility c<sub>t</sub> = c<sub>rock</sub> + S<sub>w</sub>·c<sub>w</sub> + S<sub>o</sub>·c<sub>o</sub>
+        for Class II UIC water injection. Provides a defensible, citation-backed input value for ZEI / AOR calculations.
+        Standard practice per 40 CFR §146.6.
+      </p>
+
+      <div class="section-label">1. Component inputs</div>
+      <div class="row">
+        <div>
+          <label>Water saturation, S<sub>w</sub> (fraction)</label>
+          <input type="number" id="ctSw" value="1.0" step="any" min="0" max="1">
+          <div class="input-helper">
+            Water saturation in the injection zone. For a water-saturated disposal zone (typical Class II
+            injection into a brine aquifer or fully swept reservoir), S<sub>w</sub> = 1.0. For a partially
+            depleted reservoir with residual oil, use the actual S<sub>w</sub> from log analysis or core data.
+          </div>
+        </div>
+        <div>
+          <label>Oil saturation, S<sub>o</sub> (fraction)</label>
+          <input type="number" id="ctSo" value="0.0" step="any" min="0" max="1">
+          <div class="input-helper">
+            Residual oil saturation in the injection zone. For a clean disposal zone, S<sub>o</sub> = 0.
+            For a depleted producer being converted to injection, use the post-production residual
+            S<sub>or</sub> — typically 0.20–0.35 depending on the formation.
+          </div>
+        </div>
+      </div>
+
+      <div class="row3" style="margin-top:14px;">
+        <div>
+          <label>Rock compressibility, c<sub>rock</sub> (1/psi)</label>
+          <input type="number" id="ctCrock" value="4e-6" step="any">
+          <div class="input-helper">
+            Pore-volume compressibility of the reservoir rock. Typical values: 3–5 × 10⁻⁶ /psi for
+            consolidated sandstones, 4–7 × 10⁻⁶ /psi for unconsolidated sands (common in California
+            shallow disposal zones), 5–10 × 10⁻⁶ /psi for friable or poorly consolidated formations,
+            2–4 × 10⁻⁶ /psi for limestones, 3–6 × 10⁻⁶ /psi for dolomites. Default 4 × 10⁻⁶ /psi is
+            appropriate for typical consolidated sandstone. Reference: Newman (1973), "Pore-Volume
+            Compressibility of Consolidated, Friable, and Unconsolidated Reservoir Rocks Under
+            Hydrostatic Loading," JPT.
+          </div>
+        </div>
+        <div>
+          <label>Water compressibility, c<sub>w</sub> (1/psi)</label>
+          <input type="number" id="ctCw" value="3e-6" step="any">
+          <div class="input-helper">
+            Compressibility of formation water at reservoir conditions. Typical range 2.5–3.5 × 10⁻⁶ /psi
+            for brines at 100–200°F and 1000–3000 psi. Increases slightly with temperature, decreases
+            slightly with pressure and salinity. Default 3 × 10⁻⁶ /psi is appropriate for typical produced
+            water. Reference: McCain (1990), <em>The Properties of Petroleum Fluids</em>, 2nd ed.
+          </div>
+        </div>
+        <div>
+          <label>Oil compressibility, c<sub>o</sub> (1/psi)</label>
+          <input type="number" id="ctCo" value="10e-6" step="any">
+          <div class="input-helper">
+            Compressibility of residual oil at reservoir conditions, above bubble point. Typical range
+            5–15 × 10⁻⁶ /psi depending on API gravity, GOR, and pressure. Lighter oils with higher GOR
+            have higher compressibility. Default 10 × 10⁻⁶ /psi is appropriate for typical California
+            heavy-to-medium crude. Reference: McCain (1990), Vasquez-Beggs correlation. Note: contributes
+            zero to c<sub>t</sub> when S<sub>o</sub> = 0.
+          </div>
+        </div>
+      </div>
+
+      <div id="ctSatWarn" class="sat-warn" style="display:none;"></div>
+
+      <details style="margin-top:16px;" open>
+        <summary>2. Reference table — typical compressibility values</summary>
+        <div style="overflow-x:auto; margin-top:10px;">
+          <table style="width:100%;">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Component</th>
+                <th>Range (× 10⁻⁶ /psi)</th>
+                <th style="text-align:left;">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="row-label" style="text-align:left;">Consolidated sandstone</td><td>3 – 5</td><td class="row-label" style="text-align:left;">Most California Miocene/Pliocene reservoirs</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Unconsolidated sand</td><td>4 – 7</td><td class="row-label" style="text-align:left;">Shallow disposal zones, friable formations</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Limestone</td><td>2 – 4</td><td class="row-label" style="text-align:left;">Lower porosity, stiffer matrix</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Dolomite</td><td>3 – 6</td><td class="row-label" style="text-align:left;">Variable with fabric</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Fresh water</td><td>3.0 – 3.3</td><td class="row-label" style="text-align:left;">At reservoir T and P</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Produced water (saline)</td><td>2.8 – 3.2</td><td class="row-label" style="text-align:left;">Lower at higher salinity</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Dead oil (low GOR)</td><td>5 – 10</td><td class="row-label" style="text-align:left;">Above bubble point</td></tr>
+              <tr><td class="row-label" style="text-align:left;">Live oil (high GOR)</td><td>10 – 25</td><td class="row-label" style="text-align:left;">Above bubble point</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <div class="section-label" style="margin-top:18px;">3. Results</div>
+      <div class="eq-block">
+        <div>c<sub>t</sub> = c<sub>rock</sub> + S<sub>w</sub> × c<sub>w</sub> + S<sub>o</sub> × c<sub>o</sub></div>
+        <div id="ctEqSub">—</div>
+        <div class="eq-result" id="ctEqResult">—</div>
+      </div>
+
+      <div class="result-primary">
+        <div class="label">Total compressibility, c<sub>t</sub></div>
+        <div class="primary" id="ctMainSci">—</div>
+        <div class="secondary" id="ctMainPlain">—</div>
+      </div>
+
+      <div class="result-grid">
+        <div class="kv" id="ctKvRock"><div class="k">Rock contribution</div><div class="v" id="ctRockV">—</div><div class="k" id="ctRockPct">—</div></div>
+        <div class="kv" id="ctKvWater"><div class="k">Water contribution (S<sub>w</sub>·c<sub>w</sub>)</div><div class="v" id="ctWaterV">—</div><div class="k" id="ctWaterPct">—</div></div>
+        <div class="kv" id="ctKvOil"><div class="k">Oil contribution (S<sub>o</sub>·c<sub>o</sub>)</div><div class="v" id="ctOilV">—</div><div class="k" id="ctOilPct">—</div></div>
+      </div>
+
+      <p id="ctInterp" style="margin:12px 0 0 0; font-size:13px; color:var(--text); font-weight:500;">—</p>
+
+      <div class="citation-footer">
+        Calculated per c<sub>t</sub> = c<sub>rock</sub> + S<sub>w</sub>·c<sub>w</sub> + S<sub>o</sub>·c<sub>o</sub>.
+        Component values: rock per Newman (1973); water per McCain (1990); oil per McCain (1990) Vasquez-Beggs.
+        Reference: 40 CFR §146.6.
+      </div>
+
+      <details style="margin-top:18px;">
+        <summary>4. Methods, references, and caveats</summary>
+        <ul style="font-size:13px;">
+          <li><strong>Total compressibility equation:</strong> c<sub>t</sub> = c<sub>rock</sub> + S<sub>w</sub>·c<sub>w</sub> + S<sub>o</sub>·c<sub>o</sub>. Saturation-weighted additive sum of pore-volume and fluid-phase isothermal compressibilities.</li>
+          <li><strong>Assumptions:</strong> gas saturation = 0 (typical Class II brine disposal); single-phase oil above bubble point; isothermal; component contributions independent and additive.</li>
+          <li><strong>Newman (1973):</strong> "Pore-Volume Compressibility of Consolidated, Friable, and Unconsolidated Reservoir Rocks Under Hydrostatic Loading," <em>Journal of Petroleum Technology</em>, February 1973. Source for c<sub>rock</sub> ranges.</li>
+          <li><strong>McCain (1990):</strong> <em>The Properties of Petroleum Fluids</em>, 2nd ed., PennWell Books. Source for c<sub>w</sub> and c<sub>o</sub> defaults; oil compressibility above bubble point per the Vasquez-Beggs correlation.</li>
+          <li><strong>Regulatory basis:</strong> standard practice for Class II UIC area-of-review (AOR) and zone of endangering influence (ZEI) calculations per 40 CFR §146.6.</li>
+          <li><strong>Pressure / temperature dependence:</strong> component compressibilities vary with reservoir conditions. Defaults assume 100–200°F, 1000–3000 psi (typical California shallow disposal zones). For significantly different conditions, adjust component values using published correlations.</li>
+          <li><strong>Below bubble point:</strong> oil compressibility rises sharply as dissolved gas evolves, and this simple additive model is no longer valid. Assume single-phase oil for c<sub>t</sub> purposes.</li>
+          <li><strong>High-salinity brines:</strong> for &gt;100,000 ppm TDS, c<sub>w</sub> can fall below 2.5 × 10⁻⁶ /psi; apply a salinity-corrected value if needed.</li>
+        </ul>
+      </details>
+
+      <div class="print-only print-footer">Calculated <span id="ctPrintDate"></span> | Numeric Solutions LLC</div>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -1113,7 +1375,7 @@
     },
   };
 
-  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs", "petro"];
+  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs", "petro", "ct"];
   document.querySelectorAll("nav.tabs button").forEach(b => {
     b.onclick = () => {
       document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
@@ -2531,6 +2793,102 @@
   document.querySelectorAll('input[name="petroTMode"]').forEach(r => r.onchange = updatePetro);
   document.querySelectorAll('input[name="petroSalCorr"]').forEach(r => r.onchange = updatePetro);
   updatePetro();
+
+  // ===== Total Compressibility (c_t) calculator =====
+  // Format helpers: all values shown on the 10⁻⁶ /psi scale (microsipsi),
+  // matching the petroleum convention used in permit documentation.
+  function ctFmtE6(v) {
+    if (!isFinite(v)) return "—";
+    return (v * 1e6).toFixed(2) + "e-6";
+  }
+  function ctFmtSci(v) {
+    if (!isFinite(v)) return "—";
+    return (v * 1e6).toFixed(2) + " × 10⁻⁶";
+  }
+  function ctClearOutputs() {
+    ["ctEqSub","ctEqResult","ctMainSci","ctMainPlain","ctRockV","ctWaterV","ctOilV","ctRockPct","ctWaterPct","ctOilPct"]
+      .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = "—"; });
+    document.getElementById("ctInterp").textContent = "Provide all five inputs to compute c_t.";
+    ["ctKvRock","ctKvWater","ctKvOil"].forEach(id => document.getElementById(id).classList.remove("dominant"));
+  }
+  function updateCt() {
+    const Sw    = parseFloat(document.getElementById("ctSw").value);
+    const So    = parseFloat(document.getElementById("ctSo").value);
+    const cRock = parseFloat(document.getElementById("ctCrock").value);
+    const cW    = parseFloat(document.getElementById("ctCw").value);
+    const cO    = parseFloat(document.getElementById("ctCo").value);
+
+    // Saturation sum check (warn but still compute)
+    const warnEl = document.getElementById("ctSatWarn");
+    if (isFinite(Sw) && isFinite(So)) {
+      const sum = Sw + So;
+      if (sum > 1.0001) {
+        warnEl.style.display = "block";
+        warnEl.textContent = "S_w + S_o = " + sum.toFixed(2) + " exceeds 1.0 — please check inputs.";
+      } else if (sum < 0.9999) {
+        warnEl.style.display = "block";
+        warnEl.textContent = "S_w + S_o = " + sum.toFixed(2) + " — remaining " + (1 - sum).toFixed(2)
+          + " fraction is implicit gas (unaccounted for in this model). Confirm this is intended.";
+      } else {
+        warnEl.style.display = "none";
+      }
+    } else {
+      warnEl.style.display = "none";
+    }
+
+    if (![Sw, So, cRock, cW, cO].every(isFinite)) { ctClearOutputs(); return; }
+
+    const waterContrib = Sw * cW;
+    const oilContrib   = So * cO;
+    const ct = cRock + waterContrib + oilContrib;
+
+    // Equation block — substituted numeric values, matching the spec format.
+    document.getElementById("ctEqSub").innerHTML =
+      "c<sub>t</sub> = " + ctFmtE6(cRock)
+      + " + (" + Sw.toFixed(2) + " × " + ctFmtE6(cW) + ")"
+      + " + (" + So.toFixed(2) + " × " + ctFmtE6(cO) + ")";
+    document.getElementById("ctEqResult").innerHTML =
+      "c<sub>t</sub> = " + ctFmtSci(ct) + " /psi";
+
+    // Primary result card (two-format display).
+    document.getElementById("ctMainSci").innerHTML  = ctFmtSci(ct) + " /psi";
+    document.getElementById("ctMainPlain").textContent = ctFmtE6(ct) + " /psi  (copy-paste)";
+
+    // Component contributions + percentage of c_t.
+    document.getElementById("ctRockV").textContent  = ctFmtE6(cRock);
+    document.getElementById("ctWaterV").textContent = ctFmtE6(waterContrib);
+    document.getElementById("ctOilV").textContent   = ctFmtE6(oilContrib);
+    const pct = v => (ct > 0 && isFinite(v)) ? (v / ct * 100).toFixed(1) + "% of c_t" : "—";
+    document.getElementById("ctRockPct").textContent  = pct(cRock);
+    document.getElementById("ctWaterPct").textContent = pct(waterContrib);
+    document.getElementById("ctOilPct").textContent   = pct(oilContrib);
+
+    // Highlight the dominant contribution card.
+    const comps = [
+      { label: "rock",  v: cRock,        elId: "ctKvRock" },
+      { label: "water", v: waterContrib, elId: "ctKvWater" },
+      { label: "oil",   v: oilContrib,   elId: "ctKvOil" },
+    ];
+    comps.sort((a, b) => b.v - a.v);
+    comps.forEach((c, i) => {
+      const el = document.getElementById(c.elId);
+      if (i === 0 && c.v > 0) el.classList.add("dominant");
+      else el.classList.remove("dominant");
+    });
+    document.getElementById("ctInterp").textContent =
+      "Total compressibility is dominated by " + comps[0].label + " under these inputs.";
+  }
+  ["ctSw","ctSo","ctCrock","ctCw","ctCo"].forEach(id => document.getElementById(id).oninput = updateCt);
+
+  // Populate print-footer date (yyyy-mm-dd) for permit documentation.
+  (function setCtPrintDate() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    document.getElementById("ctPrintDate").textContent = yyyy + "-" + mm + "-" + dd;
+  })();
+  updateCt();
 </script>
 </body>
 </html>
