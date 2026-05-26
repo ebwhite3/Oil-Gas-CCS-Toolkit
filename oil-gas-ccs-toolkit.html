@@ -539,6 +539,7 @@
   <button class="tab" data-tab="ccs">CCS Calcs &amp; Conversions</button>
   <button class="tab" data-tab="petro">R-P Salinity</button>
   <button class="tab" data-tab="ct">Total Compressibility (c<sub>t</sub>)</button>
+  <button class="tab" data-tab="rat">Darcy Permeability (RAT)</button>
 </nav>
 <main>
   <div class="print-only print-header" id="printHeader">NSLLC Toolkit</div>
@@ -1309,6 +1310,345 @@
     </div>
   </section>
 
+  <section id="rat" hidden>
+    <div class="card">
+      <h2>Darcy Permeability (RAT)</h2>
+      <p>
+        Effective (skin-included) permeability from a stabilized single-rate injectivity test (RAT survey)
+        on a Class II UIC well. Computes bottomhole flowing pressure from surface injection pressure
+        accounting for hydrostatic head and tubing friction, then applies Darcy's steady-state radial
+        flow equation.
+      </p>
+
+      <div class="section-label">1. Survey data</div>
+      <div class="row">
+        <div>
+          <label>Surface injection pressure, P<sub>surf</sub> (psi)</label>
+          <input type="number" id="ratPsurf" value="500" step="any">
+          <div class="input-helper">
+            Wellhead injection pressure measured during the stabilized portion of the RAT survey.
+            Use the value paired with the observed rate, not a long-term average.
+          </div>
+        </div>
+        <div>
+          <label>Observed injection rate, q (bbl/d)</label>
+          <input type="number" id="ratQ" value="1000" step="any">
+          <div class="input-helper">
+            Instantaneous measured rate at the wellhead flowmeter during the stabilized portion of the
+            survey — <strong>not</strong> the monthly average from injection records. Use the rate paired with
+            the P<sub>surf</sub> above. The well should have been injecting at this rate for at least
+            1–2 hours before the reading to ensure pressure has stabilized.
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Bottomhole temperature, T<sub>BH</sub> (°F)</label>
+          <input type="number" id="ratTBH" value="120" step="any">
+          <div class="input-helper">
+            Reservoir temperature at the depth of interest. From BHT surveys, RAT temperature log, or
+            computed from geothermal gradient. Used to auto-compute water viscosity. Default 120°F is
+            typical for shallow California disposal zones.
+          </div>
+        </div>
+        <div>
+          <label>Survey date (optional)</label>
+          <input type="date" id="ratDate">
+          <div class="input-helper">Date of the RAT survey. Used in PDF/print reports only.</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">2. Well configuration</div>
+      <div class="row">
+        <div>
+          <label>Tubing depth to top perfs, L (ft)</label>
+          <input type="number" id="ratL" value="3000" step="any">
+          <div class="input-helper">
+            Measured depth from surface to the top of the perforated interval (length of the tubing
+            string). Used for both hydrostatic and friction calculations. For deviated wells, use
+            measured depth; for highly deviated wells, hydrostatic should ideally use TVD — a future
+            revision will support this.
+          </div>
+        </div>
+        <div>
+          <label>Tubing OD / weight</label>
+          <select id="ratTubingOD">
+            <option value="2.375_4.7">2-3/8" 4.7 lb/ft (ID 1.995")</option>
+            <option value="2.875_6.5" selected>2-7/8" 6.5 lb/ft (ID 2.441")</option>
+            <option value="3.5_9.3">3-1/2" 9.3 lb/ft (ID 2.992")</option>
+            <option value="4.5_12.6">4-1/2" 12.6 lb/ft (ID 3.958")</option>
+            <option value="custom">Custom (enter ID below)</option>
+          </select>
+          <div class="input-helper">
+            Standard API tubing sizes. Selecting an OD/weight auto-fills the ID below. Choose "Custom"
+            for non-standard tubing.
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Tubing ID, d<sub>i</sub> (inches)</label>
+          <input type="number" id="ratDi" value="2.441" step="any">
+          <div class="input-helper">
+            Inside diameter of injection tubing. Auto-populates based on the tubing size selected above.
+            Override for non-standard or worn tubing.
+          </div>
+        </div>
+        <div>
+          <label>Tubing roughness, ε (inches)</label>
+          <input type="number" id="ratEps" value="0.0018" step="any">
+          <div class="input-helper">
+            Pipe surface roughness. Default 0.0018 in for new commercial steel tubing. Increase to
+            0.005–0.01 in for scaled, corroded, or service-aged tubing. The friction calculation is
+            moderately sensitive to roughness.
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Wellbore radius, r<sub>w</sub> (ft)</label>
+          <input type="number" id="ratRw" value="0.354" step="any">
+          <div class="input-helper">
+            Radius of the wellbore at the perforations. Equals (hole diameter in inches) / 24.
+            For an 8.5-inch hole, r<sub>w</sub> = 0.354 ft. For 6.125-inch hole, r<sub>w</sub> = 0.255 ft.
+            Default assumes an 8.5-inch hole.
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">3. Fluid properties</div>
+      <div class="row">
+        <div>
+          <label>Injection fluid type</label>
+          <select id="ratFluidType">
+            <option value="fresh">Fresh water (grad 0.433, ρ 62.4)</option>
+            <option value="light" selected>Light produced water (grad 0.44, ρ 63.4)</option>
+            <option value="typical">Typical produced water (grad 0.45, ρ 64.9)</option>
+            <option value="heavy">Heavy brine (grad 0.465, ρ 67.0)</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div class="input-helper">
+            Selecting a fluid type auto-fills the gradient and density. Choose "Custom" to enter
+            values directly.
+          </div>
+        </div>
+        <div></div>
+      </div>
+      <div class="row3" style="margin-top:14px;">
+        <div>
+          <label>Injection fluid gradient (psi/ft)</label>
+          <input type="number" id="ratGrad" value="0.44" step="any">
+          <div class="input-helper">
+            Hydrostatic gradient of injection fluid. Used to compute pressure added by the fluid column
+            from surface to perforations.
+          </div>
+        </div>
+        <div>
+          <label>Fluid density, ρ (lb/ft³)</label>
+          <input type="number" id="ratRho" value="63.4" step="any">
+          <div class="input-helper">
+            Density of injection fluid. Used in the friction calculation. Converted internally to
+            lb/gal (÷ 7.481) to match the standard Reynolds and Fanning constants.
+          </div>
+        </div>
+        <div>
+          <label>Water viscosity, μ (cP)</label>
+          <input type="number" id="ratMu" value="0.51" step="any">
+          <div class="input-helper">
+            Viscosity at reservoir temperature. Auto-calculated from T<sub>BH</sub> via the McCain
+            fresh-water correlation (μ = 109.574 · T<sup>−1.12166</sup>, T in °F). Override for
+            non-water fluid or salinity-corrected values.
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Formation volume factor, B<sub>w</sub> (RB/STB)</label>
+          <input type="number" id="ratB" value="1.0" step="any">
+          <div class="input-helper">
+            Water formation volume factor. Default 1.0 is appropriate for typical brines and rarely
+            deviates more than 1–2% for water.
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">4. Reservoir properties</div>
+      <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="ratPeMode" id="ratPeModeA" value="A" style="width:auto;">
+          Mode A — direct P<sub>e</sub>
+        </label>
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="ratPeMode" id="ratPeModeB" value="B" checked style="width:auto;">
+          Mode B — from static fluid level (default)
+        </label>
+        <label style="margin:0; display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--text); font-size:13px; cursor:pointer;">
+          <input type="radio" name="ratPeMode" id="ratPeModeC" value="C" style="width:auto;">
+          Mode C — regional gradient
+        </label>
+      </div>
+
+      <div id="ratPeModeAGroup" class="row" style="display:none;">
+        <div>
+          <label>Static reservoir pressure, P<sub>e</sub> (psi)</label>
+          <input type="number" id="ratPeA" value="880" step="any">
+          <div class="input-helper">
+            Reservoir pressure at the drainage radius. Use this mode if you have a fall-off
+            extrapolation, a direct static gradient survey, or a known P<sub>e</sub> from prior work.
+          </div>
+        </div>
+        <div></div>
+      </div>
+      <div id="ratPeModeBGroup" class="row">
+        <div>
+          <label>Static fluid level from surface, z<sub>fl</sub> (ft)</label>
+          <input type="number" id="ratZfl" value="1000" step="any">
+          <div class="input-helper">
+            Depth from surface to the top of the fluid column in the wellbore, measured during shut-in
+            conditions. From an acoustic fluid level survey (e.g., Echometer) or a wireline static survey
+            taken before the RAT. If the well is full to surface, enter 0.
+          </div>
+        </div>
+        <div>
+          <label>Static column gradient (psi/ft)</label>
+          <input type="number" id="ratGradS" value="0.44" step="any">
+          <div class="input-helper">
+            Gradient of the static fluid column in the wellbore. Typically 0.43–0.46 psi/ft for water/brine.
+            Default 0.44 psi/ft is appropriate for typical produced water.
+          </div>
+        </div>
+      </div>
+      <div id="ratPeModeCGroup" class="row" style="display:none;">
+        <div>
+          <label>Regional pressure gradient (psi/ft)</label>
+          <input type="number" id="ratGradR" value="0.433" step="any">
+          <div class="input-helper">
+            Lowest-confidence mode — use only when no fluid level or pressure measurement is available.
+            Typical: 0.40 (lightly depleted), 0.433 (virgin hydrostatic), 0.465 (slightly overpressured).
+          </div>
+        </div>
+        <div></div>
+      </div>
+      <div id="ratPeWarn" class="sat-warn" style="display:none;"></div>
+
+      <div class="row3" style="margin-top:14px;">
+        <div>
+          <label>Drainage radius, r<sub>e</sub> (ft)</label>
+          <input type="number" id="ratRe" value="660" step="any">
+          <div class="input-helper">
+            Radius at which P<sub>e</sub> is assumed to apply. Conventional: 660 ft (40-acre), 933 ft
+            (160-acre), 1320 ft (320-acre). The calculation is relatively insensitive to r<sub>e</sub>
+            since it appears inside ln(r<sub>e</sub>/r<sub>w</sub>) — going from 500 to 1500 ft changes
+            k by only ~30%.
+          </div>
+        </div>
+        <div>
+          <label>Effective net thickness, h<sub>eff</sub> (ft)</label>
+          <input type="number" id="ratHeff" value="30" step="any">
+          <div class="input-helper">
+            Net thickness actually taking fluid — <strong>not</strong> the total perforated interval. From a
+            spinner survey, sum the intervals showing measurable flow. If no spinner is available, use
+            net pay from log analysis.
+          </div>
+        </div>
+        <div>
+          <label>Perforated interval, h<sub>perf</sub> (ft)</label>
+          <input type="number" id="ratHperf" value="30" step="any">
+          <div class="input-helper">
+            Total perforated interval, for reference only. Not used in k, but used to compute fluid
+            entry efficiency (h<sub>eff</sub> / h<sub>perf</sub>).
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">5. Intermediate values (QC)</div>
+      <div class="result-grid">
+        <div class="kv"><div class="k">P<sub>e</sub> (computed / entered)</div><div class="v" id="ratPeOut">—</div><div class="k" id="ratPeSource">—</div></div>
+        <div class="kv"><div class="k">Reynolds number, Re</div><div class="v" id="ratReOut">—</div><div class="k" id="ratReRegime">—</div></div>
+        <div class="kv"><div class="k">Fanning friction factor, f</div><div class="v" id="ratFout">—</div><div class="k">dimensionless</div></div>
+        <div class="kv"><div class="k">ΔP<sub>friction</sub></div><div class="v" id="ratDpFric">—</div><div class="k">psi</div></div>
+        <div class="kv"><div class="k">P<sub>hydrostatic</sub></div><div class="v" id="ratPhydro">—</div><div class="k">psi</div></div>
+        <div class="kv"><div class="k">P<sub>wf</sub> (bottomhole flowing)</div><div class="v" id="ratPwf">—</div><div class="k">psi</div></div>
+        <div class="kv"><div class="k">ΔP across formation</div><div class="v" id="ratDp">—</div><div class="k">psi</div></div>
+        <div class="kv"><div class="k">ln(r<sub>e</sub> / r<sub>w</sub>)</div><div class="v" id="ratLnRatio">—</div><div class="k">—</div></div>
+        <div class="kv"><div class="k">Fluid entry efficiency</div><div class="v" id="ratEntryEff">—</div><div class="k">h<sub>eff</sub> / h<sub>perf</sub></div></div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">6. Results</div>
+      <div class="result-primary">
+        <div class="label">Effective permeability, k<sub>eff</sub></div>
+        <div class="primary" id="ratKeff">—</div>
+        <div class="secondary">141.2 · q · μ · B · ln(r<sub>e</sub>/r<sub>w</sub>) / (h · ΔP), steady-state radial</div>
+      </div>
+      <div class="result-grid">
+        <div class="kv"><div class="k">Permeability-thickness, kh</div><div class="v" id="ratKh">—</div><div class="k">mD-ft</div></div>
+        <div class="kv"><div class="k">Injectivity Index, II</div><div class="v" id="ratII">—</div><div class="k">bbl/d/psi</div></div>
+        <div class="kv"><div class="k">Specific injectivity, II/h</div><div class="v" id="ratIIh">—</div><div class="k">bbl/d/psi/ft</div></div>
+      </div>
+      <p style="margin:12px 0 0 0; font-size:12.5px; color:var(--muted); font-style:italic;">
+        This is the effective (skin-included) permeability assuming steady-state radial flow. To
+        separate intrinsic k from skin, a pressure transient analysis (PTA) is required.
+      </p>
+
+      <div class="section-label" style="margin-top:18px;">7. Sensitivity — k<sub>eff</sub> (mD) vs. P<sub>e</sub> and h<sub>eff</sub></div>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
+        Columns: P<sub>e</sub> at ±20% in 10% steps. Rows: h<sub>eff</sub> at 0.50× to 1.50× in 25% steps.
+        All other inputs (q, μ, B, r<sub>e</sub>, r<sub>w</sub>, P<sub>wf</sub>) held constant at base values.
+        Base case (center cell) highlighted; cells within ±50% of base k tinted lighter.
+      </p>
+      <div style="overflow-x:auto;">
+        <table id="ratSens" class="sensitivity">
+          <thead><tr id="ratSensHead"></tr></thead>
+          <tbody id="ratSensBody"></tbody>
+        </table>
+      </div>
+
+      <details style="margin-top:18px;">
+        <summary>8. Methods, references, and caveats</summary>
+        <ul style="font-size:13px;">
+          <li><strong>Darcy radial flow (steady-state, field units):</strong>
+            k (mD) = 141.2 · q (bbl/d) · μ (cP) · B (RB/STB) · ln(r<sub>e</sub>/r<sub>w</sub>) / (h (ft) · ΔP (psi)),
+            with ΔP = P<sub>wf</sub> − P<sub>e</sub>.
+          </li>
+          <li><strong>Bottomhole flowing pressure:</strong> P<sub>wf</sub> = P<sub>surf</sub> + P<sub>hydrostatic</sub> − ΔP<sub>friction</sub>,
+            with P<sub>hydrostatic</sub> = L · gradient.</li>
+          <li><strong>Fanning friction equation (field units):</strong>
+            ΔP<sub>f</sub> (psi) = 11.46×10⁻⁶ · f · ρ · q² · L / d<sub>i</sub>⁵,
+            with ρ in lb/gal (calculator converts the lb/ft³ input ÷ 7.481), q in bbl/d, L in ft,
+            d<sub>i</sub> in inches.</li>
+          <li><strong>Reynolds number:</strong> Re = 92.1 · ρ · q / (μ · d<sub>i</sub>), same units as friction.</li>
+          <li><strong>Swamee-Jain explicit (Fanning):</strong> f = 0.0625 / [log<sub>10</sub>((ε/d<sub>i</sub>)/3.7 + 5.74/Re<sup>0.9</sup>)]²,
+            valid for Re > 4000. Laminar fallback (Re ≤ 4000): f = 16/Re.</li>
+          <li><strong>Water viscosity (McCain 1990, fresh water at atmospheric P):</strong>
+            μ (cP) = 109.574 · T (°F)<sup>−1.12166</sup>.</li>
+          <li><strong>References:</strong> Earlougher (1977), <em>Advances in Well Test Analysis</em>, SPE Monograph 5;
+            Crane Technical Paper No. 410; Swamee & Jain (1976), "Explicit equations for pipe-flow problems";
+            McCain (1990), <em>The Properties of Petroleum Fluids</em>, 2nd ed.</li>
+          <li><strong>Effective vs intrinsic k:</strong> result is effective (skin-included) permeability.
+            Positive skin (damage) causes k<sub>eff</sub> to underestimate intrinsic k; negative skin
+            (stimulation) causes overestimation. To resolve, run a pressure transient analysis.</li>
+          <li><strong>Steady-state assumption:</strong> requires stabilized rate and pressure at the time
+            of the survey. If taken during transient conditions (recent rate change, recent startup or
+            shut-in), k<sub>eff</sub> will be biased. Allow 1–2 hours of stable injection before recording.</li>
+          <li><strong>Observed rate vs. monthly average:</strong> use the wellhead-flowmeter rate at the
+            stabilized portion of the survey — <strong>not</strong> the monthly injection average from regulatory
+            reports. Monthly averages smear over downtime, rate changes, and operational variability and
+            paired with an instantaneous pressure give a meaningless result.</li>
+          <li><strong>Deviated wells:</strong> friction uses measured depth (correct); hydrostatic also
+            currently uses measured depth (approximation). For wells &gt;30° from vertical, hydrostatic
+            should be computed from TVD. A future revision will support separate MD/TVD entry.</li>
+          <li><strong>Single-phase liquid:</strong> friction model assumes single-phase water flow.
+            Multiphase, gassy, or compressible flow requires different methodology.</li>
+          <li><strong>Static fluid level (Mode B):</strong> assumes the static column has equilibrated.
+            For recently shut-in wells, fluid level may still be rising — wait for stabilization before
+            measuring.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
   <div class="print-only print-footer" id="printFooter">Calculated <span id="printDate"></span> | Numeric Solutions LLC</div>
 </main>
 
@@ -1391,7 +1731,7 @@
     },
   };
 
-  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs", "petro", "ct"];
+  const tabIds = ["convert", "calc", "volumetrics", "decline", "ccs", "petro", "ct", "rat"];
   // Friendly names used for the print-only page header (plain text, no HTML).
   const tabPrintNames = {
     convert:     "Unit Converter",
@@ -1401,6 +1741,7 @@
     ccs:         "CCS Calculations & Conversions",
     petro:       "Resistivity-Porosity Salinity Calculator",
     ct:          "Total Compressibility (c_t)",
+    rat:         "Darcy Permeability (RAT)",
   };
   function setPrintHeaderFor(tabId) {
     const el = document.getElementById("printHeader");
@@ -2926,6 +3267,236 @@
     document.getElementById("printDate").textContent = yyyy + "-" + mm + "-" + dd;
   })();
   updateCt();
+
+  // ===== Darcy Permeability (RAT) calculator =====
+  // Standard API tubing: OD/weight → ID (in). User can override via "Custom".
+  const RAT_TUBING_IDS = {
+    "2.375_4.7":  1.995,
+    "2.875_6.5":  2.441,
+    "3.5_9.3":    2.992,
+    "4.5_12.6":   3.958,
+  };
+  // Injection fluid presets: gradient (psi/ft), density (lb/ft³)
+  const RAT_FLUID_PRESETS = {
+    fresh:   { grad: 0.433, rho: 62.4 },
+    light:   { grad: 0.44,  rho: 63.4 },
+    typical: { grad: 0.45,  rho: 64.9 },
+    heavy:   { grad: 0.465, rho: 67.0 },
+  };
+  // Sensitivity matrix multipliers (P_e cols × h_eff rows)
+  const RAT_PE_MULTS = [0.80, 0.90, 1.00, 1.10, 1.20];
+  const RAT_H_MULTS  = [0.50, 0.75, 1.00, 1.25, 1.50];
+
+  // McCain (1990) fresh-water viscosity at atmospheric pressure: μ = 109.574 · T^(-1.12166), T in °F.
+  function ratWaterVisc(T_F) {
+    if (!isFinite(T_F) || T_F <= 0) return NaN;
+    return 109.574 * Math.pow(T_F, -1.12166);
+  }
+  // Reynolds number, ρ in lb/gal, q in bbl/d, μ in cP, d in inches.
+  function ratReynolds(rho_lbgal, q_bbld, mu_cP, d_i_in) {
+    if (![rho_lbgal, q_bbld, mu_cP, d_i_in].every(v => isFinite(v) && v > 0)) return NaN;
+    return 92.1 * rho_lbgal * q_bbld / (mu_cP * d_i_in);
+  }
+  // Swamee-Jain explicit Fanning friction factor. Laminar fallback at Re ≤ 4000.
+  function ratFanning(Re, eps_in, d_i_in) {
+    if (!isFinite(Re) || Re <= 0) return NaN;
+    if (Re <= 4000) return 16 / Re;
+    const rel = eps_in / d_i_in;
+    const arg = rel / 3.7 + 5.74 / Math.pow(Re, 0.9);
+    const lg = Math.log10(arg);
+    if (!isFinite(lg) || lg === 0) return NaN;
+    return 0.0625 / (lg * lg);
+  }
+  // Friction pressure drop (psi). ρ in lb/gal, q in bbl/d, L in ft, d in inches.
+  function ratFrictionDp(f, rho_lbgal, q_bbld, L_ft, d_i_in) {
+    if (![f, rho_lbgal, q_bbld, L_ft, d_i_in].every(v => isFinite(v) && v >= 0)) return NaN;
+    if (d_i_in <= 0) return NaN;
+    return 11.46e-6 * f * rho_lbgal * q_bbld * q_bbld * L_ft / Math.pow(d_i_in, 5);
+  }
+  // Darcy steady-state radial. q in bbl/d, μ cP, B RB/STB, re/rw ft, h ft, ΔP psi → k in mD.
+  function ratPerm(q, mu, B, re, rw, h, dP) {
+    if (![q, mu, B, re, rw, h, dP].every(v => isFinite(v) && v > 0)) return NaN;
+    if (re <= rw) return NaN;
+    return (141.2 * q * mu * B * Math.log(re / rw)) / (h * dP);
+  }
+  function ratFmt(x, digits) {
+    if (!isFinite(x)) return "—";
+    return x.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  }
+  function ratFmtInt(x) {
+    if (!isFinite(x)) return "—";
+    return Math.round(x).toLocaleString("en-US");
+  }
+  function ratFmtSci(x) {
+    if (!isFinite(x)) return "—";
+    if (Math.abs(x) >= 1e5) return x.toExponential(2);
+    return x.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  }
+
+  // Toggle P_e mode-specific input groups.
+  function ratShowPeMode() {
+    const mode = document.querySelector('input[name="ratPeMode"]:checked').value;
+    document.getElementById("ratPeModeAGroup").style.display = mode === "A" ? "" : "none";
+    document.getElementById("ratPeModeBGroup").style.display = mode === "B" ? "" : "none";
+    document.getElementById("ratPeModeCGroup").style.display = mode === "C" ? "" : "none";
+  }
+
+  function updateRat() {
+    ratShowPeMode();
+
+    // Read all inputs
+    const P_surf = parseFloat(document.getElementById("ratPsurf").value);
+    const q      = parseFloat(document.getElementById("ratQ").value);
+    const T_BH   = parseFloat(document.getElementById("ratTBH").value);
+    const L      = parseFloat(document.getElementById("ratL").value);
+    const d_i    = parseFloat(document.getElementById("ratDi").value);
+    const eps    = parseFloat(document.getElementById("ratEps").value);
+    const r_w    = parseFloat(document.getElementById("ratRw").value);
+    const grad   = parseFloat(document.getElementById("ratGrad").value);
+    const rho    = parseFloat(document.getElementById("ratRho").value);
+    const mu     = parseFloat(document.getElementById("ratMu").value);
+    const B      = parseFloat(document.getElementById("ratB").value);
+    const r_e    = parseFloat(document.getElementById("ratRe").value);
+    const h_eff  = parseFloat(document.getElementById("ratHeff").value);
+    const h_perf = parseFloat(document.getElementById("ratHperf").value);
+
+    // P_e from selected mode
+    const mode = document.querySelector('input[name="ratPeMode"]:checked').value;
+    const warnEl = document.getElementById("ratPeWarn");
+    warnEl.style.display = "none";
+    let P_e = NaN, P_e_source = "—";
+    if (mode === "A") {
+      P_e = parseFloat(document.getElementById("ratPeA").value);
+      P_e_source = "Mode A — direct entry";
+    } else if (mode === "B") {
+      const z_fl   = parseFloat(document.getElementById("ratZfl").value);
+      const grad_s = parseFloat(document.getElementById("ratGradS").value);
+      if (isFinite(L) && isFinite(z_fl) && z_fl > L) {
+        warnEl.style.display = "block";
+        warnEl.textContent = "Fluid level (" + z_fl.toFixed(0) + " ft) is below the perforations ("
+          + L.toFixed(0) + " ft) — formation is on vacuum or has significant voidage. "
+          + "Static fluid level method is not valid here. Use Mode A or Mode C.";
+      } else if ([L, z_fl, grad_s].every(isFinite)) {
+        P_e = (L - z_fl) * grad_s;
+      }
+      P_e_source = "Mode B — fluid level";
+    } else {
+      const grad_r = parseFloat(document.getElementById("ratGradR").value);
+      if (isFinite(L) && isFinite(grad_r)) P_e = L * grad_r;
+      P_e_source = "Mode C — regional gradient";
+    }
+
+    // Friction / Reynolds: convert ρ from lb/ft³ to lb/gal (÷ 7.481) to match standard constants.
+    const rho_lbgal = isFinite(rho) ? rho / 7.481 : NaN;
+    const Re = ratReynolds(rho_lbgal, q, mu, d_i);
+    const f  = ratFanning(Re, eps, d_i);
+    const dPf = ratFrictionDp(f, rho_lbgal, q, L, d_i);
+
+    const Phydro = (isFinite(L) && isFinite(grad)) ? L * grad : NaN;
+    const Pwf = (isFinite(P_surf) && isFinite(Phydro) && isFinite(dPf)) ? P_surf + Phydro - dPf : NaN;
+    const dP = (isFinite(Pwf) && isFinite(P_e)) ? Pwf - P_e : NaN;
+    const lnRatio = (isFinite(r_e) && isFinite(r_w) && r_e > 0 && r_w > 0 && r_e > r_w) ? Math.log(r_e / r_w) : NaN;
+    const k_eff = ratPerm(q, mu, B, r_e, r_w, h_eff, dP);
+    const kh = (isFinite(k_eff) && isFinite(h_eff)) ? k_eff * h_eff : NaN;
+    const II = (isFinite(q) && isFinite(dP) && dP > 0) ? q / dP : NaN;
+    const IIh = (isFinite(II) && isFinite(h_eff) && h_eff > 0) ? II / h_eff : NaN;
+    const entryEff = (isFinite(h_eff) && isFinite(h_perf) && h_perf > 0) ? (h_eff / h_perf * 100) : NaN;
+
+    // Section 5 — Intermediate values
+    document.getElementById("ratPeOut").textContent     = isFinite(P_e) ? ratFmtInt(P_e) + " psi" : "—";
+    document.getElementById("ratPeSource").textContent  = P_e_source;
+    document.getElementById("ratReOut").textContent     = isFinite(Re) ? ratFmtSci(Re) : "—";
+    let regime = "—";
+    if (isFinite(Re)) {
+      if (Re > 4000) regime = "Turbulent";
+      else if (Re > 2300) regime = "Transitional";
+      else regime = "Laminar";
+    }
+    document.getElementById("ratReRegime").textContent  = regime;
+    document.getElementById("ratFout").textContent      = isFinite(f) ? ratFmt(f, 5) : "—";
+    document.getElementById("ratDpFric").textContent    = isFinite(dPf) ? ratFmt(dPf, 1) : "—";
+    document.getElementById("ratPhydro").textContent    = isFinite(Phydro) ? ratFmtInt(Phydro) : "—";
+    document.getElementById("ratPwf").textContent       = isFinite(Pwf) ? ratFmtInt(Pwf) : "—";
+    document.getElementById("ratDp").textContent        = isFinite(dP) ? ratFmtInt(dP) : "—";
+    document.getElementById("ratLnRatio").textContent   = isFinite(lnRatio) ? ratFmt(lnRatio, 3) : "—";
+    document.getElementById("ratEntryEff").textContent  = isFinite(entryEff) ? entryEff.toFixed(0) + "%" : "—";
+
+    // Section 6 — Results
+    document.getElementById("ratKeff").textContent = isFinite(k_eff) ? ratFmt(k_eff, 1) + " mD" : "—";
+    document.getElementById("ratKh").textContent   = isFinite(kh)    ? ratFmtInt(kh) + " mD-ft" : "—";
+    document.getElementById("ratII").textContent   = isFinite(II)    ? ratFmt(II, 3) : "—";
+    document.getElementById("ratIIh").textContent  = isFinite(IIh)   ? ratFmt(IIh, 4) : "—";
+
+    // Section 7 — Sensitivity table (k_eff vs. P_e and h_eff; q, μ, B, Pwf, r_e, r_w held constant)
+    const head = document.getElementById("ratSensHead");
+    const body = document.getElementById("ratSensBody");
+    if (head && body) {
+      head.innerHTML = "<th></th>" + RAT_PE_MULTS.map((m, ci) => {
+        const Pe_s = isFinite(P_e) ? P_e * m : NaN;
+        const lbl = (m === 1.0 ? "base" : (m > 1 ? "+" : "−") + Math.round(Math.abs(m - 1) * 100) + "%");
+        const cls = (m === 1.0) ? "current" : "";
+        return "<th class=\"" + cls + "\">P<sub>e</sub> " + lbl + "<br><span style=\"font-size:10px; font-weight:400;\">"
+          + (isFinite(Pe_s) ? ratFmtInt(Pe_s) + " psi" : "—") + "</span></th>";
+      }).join("");
+      body.innerHTML = RAT_H_MULTS.map((hm, ri) => {
+        const h_s = isFinite(h_eff) ? h_eff * hm : NaN;
+        const lbl = (hm === 1.0 ? "base" : (hm > 1 ? "+" : "−") + Math.round(Math.abs(hm - 1) * 100) + "%");
+        const rowClass = (hm === 1.0) ? "current" : "";
+        const labelCell = "<td class=\"row-label " + rowClass + "\">h " + lbl + "<br><span style=\"font-size:10px;\">"
+          + (isFinite(h_s) ? ratFmt(h_s, 1) + " ft" : "—") + "</span></td>";
+        const cells = RAT_PE_MULTS.map((pm, ci) => {
+          const Pe_s = isFinite(P_e) ? P_e * pm : NaN;
+          const dP_s = (isFinite(Pwf) && isFinite(Pe_s)) ? Pwf - Pe_s : NaN;
+          const k_s = ratPerm(q, mu, B, r_e, r_w, h_s, dP_s);
+          const isAnchor = (pm === 1.0 && hm === 1.0);
+          const isCol = (pm === 1.0);
+          let cls = isCol ? "current" : "";
+          let style = "";
+          if (isAnchor) {
+            style = "background:var(--brand); color:#fff; font-weight:700;";
+          } else if (isFinite(k_s) && isFinite(k_eff) && k_eff > 0) {
+            const ratio = k_s / k_eff;
+            if (ratio >= 0.5 && ratio <= 1.5) cls += " cell-pos";
+          }
+          return "<td class=\"" + cls + "\" style=\"" + style + "\">" + (isFinite(k_s) ? ratFmt(k_s, 1) : "—") + "</td>";
+        }).join("");
+        return "<tr>" + labelCell + cells + "</tr>";
+      }).join("");
+    }
+  }
+
+  // Tubing OD → auto-fill ID
+  document.getElementById("ratTubingOD").onchange = function() {
+    const v = this.value;
+    if (v !== "custom" && RAT_TUBING_IDS[v]) {
+      document.getElementById("ratDi").value = RAT_TUBING_IDS[v];
+    }
+    updateRat();
+  };
+  // Fluid type → auto-fill gradient and density
+  document.getElementById("ratFluidType").onchange = function() {
+    const v = this.value;
+    if (v !== "custom" && RAT_FLUID_PRESETS[v]) {
+      document.getElementById("ratGrad").value = RAT_FLUID_PRESETS[v].grad;
+      document.getElementById("ratRho").value  = RAT_FLUID_PRESETS[v].rho;
+    }
+    updateRat();
+  };
+  // T_BH → auto-fill viscosity via McCain
+  document.getElementById("ratTBH").addEventListener("input", function() {
+    const T = parseFloat(this.value);
+    if (isFinite(T) && T > 0) {
+      const mu = ratWaterVisc(T);
+      if (isFinite(mu)) document.getElementById("ratMu").value = mu.toFixed(3);
+    }
+    updateRat();
+  });
+  // Wire all RAT inputs (T_BH is already wired above, so excluded here to avoid double-wiring)
+  ["ratPsurf","ratQ","ratL","ratDi","ratEps","ratRw","ratGrad","ratRho","ratMu","ratB",
+   "ratPeA","ratZfl","ratGradS","ratGradR","ratRe","ratHeff","ratHperf"]
+    .forEach(id => document.getElementById(id).oninput = updateRat);
+  document.querySelectorAll('input[name="ratPeMode"]').forEach(r => r.onchange = updateRat);
+  updateRat();
 </script>
 </body>
 </html>
