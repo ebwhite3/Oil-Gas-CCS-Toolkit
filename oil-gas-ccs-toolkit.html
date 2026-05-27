@@ -520,49 +520,108 @@
     .print-footer { border-top: 1px solid #999; padding-top: 4px; margin-top: 14px; font-size: 9px; color: #444; text-align: right; }
   }
 
-  /* ===== Single Well ZEI Calculator ===== */
-  .zql-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-  .zql-col > .section-label:first-child { margin-top: 0; }
-  .zql-field { margin-top: 12px; }
-  .zql-modebar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 6px 0 4px 0; }
-  .zql-modebar label { margin: 0; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; color: var(--text); font-size: 12.5px; cursor: pointer; }
+  /* ===== Single Well ZEI Calculator (dense, permit-screenshot layout) ===== */
+  #zeiql .card { padding: 16px 18px; }
+  #zeiql h2 { margin-bottom: 6px; }
+  /* Project-info bar: one compact full-width row above the two columns */
+  .zql-projbar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 8px 10px; background: var(--card-alt); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px; }
+  .zql-projbar > div { display: flex; flex-direction: column; }
+  .zql-projbar label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 600; margin: 0 0 2px 0; }
+  .zql-projbar input { padding: 4px 6px; font-size: 12px; }
+  .zql-projnote { grid-column: 1 / -1; font-size: 10.5px; font-style: italic; color: var(--muted); margin: 2px 0 0 0; }
+  /* Two columns: inputs (left) -> results (right) */
+  .zql-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  /* Colored section band (replaces numbered headers) */
+  .zql-band { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; background: var(--brand); padding: 3px 9px; border-radius: 4px; margin: 14px 0 8px 0; }
+  .zql-col > .zql-band:first-child { margin-top: 0; }
+  /* Compact fields */
+  .zql-field { margin-top: 8px; }
+  #zeiql label { font-size: 12px; margin-bottom: 2px; }
+  #zeiql input, #zeiql select { padding: 5px 8px; font-size: 13px; }
+  #zeiql .row, #zeiql .row3 { gap: 8px; }
+  /* Mode toggle bar + single shared helper */
+  .zql-modebar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0 2px 0; }
+  .zql-modebar label { margin: 0; display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--brand-dark); font-size: 12px; cursor: pointer; }
   .zql-modebar input { width: auto; }
-  .zql-equiv { font-size: 11px; font-style: italic; color: var(--brand-dark); margin-top: 4px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .zql-warnbox { background: var(--warn-bg); border: 1px solid #f0d28a; border-left: 4px solid var(--warn); border-radius: 8px; padding: 14px 18px; margin-top: 12px; }
-  .zql-warnbox .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--warn); font-weight: 600; }
-  .zql-warnbox .primary { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: #92400e; font-variant-numeric: tabular-nums; margin-top: 4px; }
-  .zql-warnbox .secondary { font-family: var(--font-mono); font-size: 12.5px; color: var(--warn); margin-top: 2px; }
-  .zql-chart { width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 6px; margin-top: 10px; }
-  table.zql-dist { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; margin-top: 8px; }
-  table.zql-dist th, table.zql-dist td { padding: 3px 8px; text-align: right; border-bottom: 1px solid var(--border); }
-  table.zql-dist th { background: var(--brand-tint); color: var(--brand-darker); font-weight: 600; }
+  .zql-helper { font-size: 11px; font-style: italic; color: var(--muted); line-height: 1.4; margin: 2px 0 4px 0; }
+  .zql-equiv { font-size: 11px; font-style: italic; color: var(--brand-dark); margin-left: 6px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  /* Inline compact result line (P_USDW, k_brine, P_i, SG_i) */
+  .zql-inline { font-size: 12.5px; margin-top: 6px; padding: 5px 10px; background: var(--brand-tint); border-left: 3px solid var(--brand); border-radius: 4px; }
+  .zql-inline .value { font-family: var(--font-mono); font-weight: 600; color: var(--brand-dark); font-variant-numeric: tabular-nums; }
+  #zeiql .eq-block { padding: 8px 12px; margin: 8px 0; font-size: 13px; line-height: 1.6; }
+  #zeiql .eq-block .eq-result { font-size: 14px; margin-top: 3px; }
+  /* ===== Key Results panel (top-right, dominant) ===== */
+  .zql-keypanel { border: 1px solid var(--brand-light); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .zql-keypanel .khead { background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 12px; }
+  .zql-keybody { padding: 12px 14px; background: var(--brand-tint); }
+  .zql-zei-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+  .zql-zei { font-family: var(--font-mono); font-size: 34px; font-weight: 700; line-height: 1.05; color: var(--brand-darker); font-variant-numeric: tabular-nums; }
+  .zql-zei .u { font-size: 16px; font-weight: 600; color: var(--brand-dark); }
+  .zql-zei.none { font-size: 26px; color: var(--pos); }
+  .zql-zeinote { font-size: 11px; color: var(--muted); line-height: 1.4; margin-top: 3px; }
+  .zql-keyrow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--brand-light); }
+  .zql-keyrow .k { font-size: 12px; color: var(--text); font-weight: 500; }
+  .zql-keyrow .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; }
+  .zql-dpc .v { font-size: 20px; color: #92400e; }
+  .zql-pc .v  { font-size: 15px; color: var(--brand-darker); }
+  .zql-grad .v { font-size: 14px; color: var(--brand-dark); }
+  .zql-kh { font-size: 11px; color: var(--muted); font-family: var(--font-mono); font-variant-numeric: tabular-nums; margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--brand-light); }
+  /* Volumetric 2x2 grid */
+  .zql-vol { display: grid; grid-template-columns: auto 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 4px; font-size: 12px; }
+  .zql-vol > div { background: #fff; padding: 5px 9px; }
+  .zql-vol .h { background: var(--brand-tint); font-weight: 600; color: var(--brand-darker); font-size: 11px; text-align: right; }
+  .zql-vol .rl { background: var(--card-alt); font-weight: 500; }
+  .zql-vol .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--brand-dark); font-weight: 600; }
+  .zql-chart { width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 6px; margin-top: 8px; }
+  /* Distance tables: two side by side (20 rows in the height of 10) */
+  .zql-disttables { display: flex; gap: 10px; margin-top: 8px; }
+  .zql-disttables > table { flex: 1; }
+  table.zql-dist { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 11px; }
+  table.zql-dist th, table.zql-dist td { padding: 2px 6px; text-align: right; border-bottom: 1px solid var(--border); }
+  table.zql-dist th { background: var(--brand-tint); color: var(--brand-darker); font-weight: 600; font-size: 10px; }
   table.zql-dist td.zei-yes { color: var(--neg); font-weight: 700; }
   table.zql-dist td.zei-no { color: var(--muted); }
-  .zql-note { font-size: 11.5px; font-style: italic; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+  .zql-note { font-size: 11px; font-style: italic; color: var(--muted); line-height: 1.45; margin-top: 6px; }
+  .zql-refs { font-size: 10.5px; font-style: italic; color: var(--muted); line-height: 1.5; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
   .zql-print-sub { font-size: 11px; color: #000; margin-bottom: 8px; }
-  .zql-print-refs { text-align: left !important; line-height: 1.5; }
+  .zql-print-refs { text-align: left !important; line-height: 1.45; }
 
-  /* Print: compress the ZEI tab to a single letter-portrait page */
+  /* Print: single 8.5x11 portrait page; keep highlight backgrounds via color-adjust */
   @media print {
-    #zeiql .zql-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    #zeiql, #zeiql * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #zeiql .card { padding: 0; border: none; box-shadow: none; }
     #zeiql .card > p { display: none; }
-    #zeiql .section-label { font-size: 9px; margin: 6px 0 2px 0; }
-    #zeiql .zql-field { margin-top: 5px; }
-    #zeiql .zql-modebar { margin: 3px 0; gap: 8px; }
-    #zeiql .zql-modebar label { font-size: 8px; }
-    #zeiql .input-helper { font-size: 7.5px; line-height: 1.25; margin-top: 2px; }
-    #zeiql input, #zeiql select { padding: 2px 4px; font-size: 9px; }
-    #zeiql label { font-size: 9px; }
-    #zeiql .zql-equiv { font-size: 8px; margin-top: 2px; }
-    #zeiql .eq-block { padding: 6px 8px; font-size: 9px; line-height: 1.45; margin: 6px 0; }
-    #zeiql .eq-block .eq-result { font-size: 10.5px; }
-    #zeiql .result-primary, #zeiql .zql-warnbox { padding: 6px 10px; margin-top: 6px; }
-    #zeiql .result-primary .primary, #zeiql .zql-warnbox .primary { font-size: 14px; }
-    #zeiql .result-grid { gap: 4px 8px; }
-    #zeiql table.zql-dist { font-size: 7.5px; }
-    #zeiql table.zql-dist th, #zeiql table.zql-dist td { padding: 1px 5px; }
-    #zeiql .zql-chart { margin-top: 6px; }
-    #zeiql .zql-note { font-size: 8px; margin-top: 3px; }
+    #zeiql .zql-projbar { display: none; }
+    #zeiql .zql-grid { gap: 10px; }
+    #zeiql .zql-band { font-size: 8.5px; padding: 2px 6px; margin: 7px 0 4px 0; }
+    #zeiql label { font-size: 8px; margin-bottom: 1px; }
+    #zeiql input, #zeiql select { padding: 1px 4px; font-size: 8.5px; }
+    #zeiql .zql-field { margin-top: 4px; }
+    #zeiql .zql-modebar { margin: 3px 0 1px 0; gap: 7px; }
+    #zeiql .zql-modebar label { font-size: 7.5px; }
+    #zeiql .zql-helper, #zeiql .input-helper { font-size: 7px; line-height: 1.2; margin: 1px 0 2px 0; }
+    #zeiql .zql-equiv { font-size: 7px; }
+    #zeiql .zql-inline { font-size: 8px; padding: 2px 6px; margin-top: 3px; }
+    #zeiql .eq-block { padding: 4px 7px; font-size: 8px; line-height: 1.35; margin: 4px 0; }
+    #zeiql .eq-block .eq-result { font-size: 9px; }
+    #zeiql .zql-keypanel .khead { font-size: 8px; padding: 2px 8px; }
+    #zeiql .zql-keybody { padding: 6px 9px; }
+    #zeiql .zql-zei { font-size: 22px; }
+    #zeiql .zql-zei .u { font-size: 11px; }
+    #zeiql .zql-zei.none { font-size: 15px; }
+    #zeiql .zql-zeinote { font-size: 7px; }
+    #zeiql .zql-dpc .v { font-size: 13px; }
+    #zeiql .zql-pc .v { font-size: 10px; }
+    #zeiql .zql-grad .v { font-size: 9px; }
+    #zeiql .zql-keyrow { margin-top: 4px; padding-top: 4px; }
+    #zeiql .zql-keyrow .k { font-size: 8px; }
+    #zeiql .zql-kh { font-size: 7px; margin-top: 4px; padding-top: 3px; }
+    #zeiql .zql-vol { font-size: 8px; }
+    #zeiql .zql-vol > div { padding: 2px 6px; }
+    #zeiql .zql-chart { margin-top: 4px; }
+    #zeiql table.zql-dist { font-size: 7px; }
+    #zeiql table.zql-dist th, #zeiql table.zql-dist td { padding: 0 4px; }
+    #zeiql .zql-note, #zeiql .zql-refs { font-size: 7px; margin-top: 3px; padding-top: 3px; }
     #zeiql details { display: none; }
   }
 </style>
@@ -1701,127 +1760,110 @@
       <h2>Single Well ZEI Calculator</h2>
       <div class="print-only zql-print-sub" id="zqPrintSub"></div>
       <p>
-        Single-well, screening-level Zone of Endangering Influence for a Class II UIC permit application.
-        Computes the ZEI from the Bernard / Warner-Lear log-approximation, volumetric radii of injected
-        fluid (with and without dispersion), and the endangering-pressure threshold. Sized to print on a
-        single letter-portrait page. A rigorous transient model is built separately; this is a quick-look.
+        Single-well, screening-level Zone of Endangering Influence for a Class II UIC permit application:
+        Bernard / Warner-Lear &Delta;P, endangering pressure, and volumetric radii, sized for a one-page screenshot.
       </p>
 
+      <div class="zql-projbar">
+        <div><label>Operator</label><input type="text" id="zqOperator" placeholder="Example Oil Co."></div>
+        <div><label>Field</label><input type="text" id="zqField" placeholder="Lost Hills"></div>
+        <div><label>Area</label><input type="text" id="zqArea" placeholder="Sec. 12"></div>
+        <div><label>Well name</label><input type="text" id="zqWell" placeholder="Smith 1-12"></div>
+        <div><label>API (14-digit)</label><input type="text" id="zqAPI" placeholder="04-029-00000-00-00"></div>
+        <div><label>UIC code</label><input type="text" id="zqUIC" placeholder="10-0000"></div>
+        <div><label>Date</label><input type="date" id="zqDate"></div>
+        <div class="zql-projnote">Identifies the well; appears in the print header.</div>
+      </div>
+
       <div class="zql-grid">
-        <!-- ===================== LEFT COLUMN ===================== -->
+        <!-- ===================== LEFT COLUMN — inputs ===================== -->
         <div class="zql-col">
 
-          <div class="section-label">1. Project information</div>
-          <div class="zql-field"><label>Operator / company</label>
-            <input type="text" id="zqOperator" placeholder="e.g., Example Oil Co."></div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Field</label><input type="text" id="zqField" placeholder="e.g., Lost Hills"></div>
-            <div><label>Area</label><input type="text" id="zqArea" placeholder="e.g., Section 12"></div>
+          <div class="zql-band">Endangering pressure</div>
+          <div class="row3">
+            <div><label>Base USDW, z<sub>USDW</sub> (ft TVD)</label><input type="number" id="zqZusdw" value="2384.57" step="any"></div>
+            <div><label>Fluid level (ft TVD)</label><input type="number" id="zqFluidLevel" value="500" step="any"></div>
+            <div><label>USDW gradient (psi/ft)</label><input type="number" id="zqUsdwGrad" value="0.433" step="any"></div>
           </div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Well name</label><input type="text" id="zqWell" placeholder="e.g., Smith 1-12"></div>
-            <div><label>Well API (14-digit)</label><input type="text" id="zqAPI" placeholder="04-029-00000-00-00"></div>
-          </div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>UIC project code</label><input type="text" id="zqUIC" placeholder="e.g., 10-0000"></div>
-            <div><label>Date of calculation</label><input type="date" id="zqDate"></div>
-          </div>
-          <div class="input-helper">Identifies the well and project in printed output. Fields are optional but recommended for permit-ready documentation.</div>
+          <div class="zql-helper">Base of USDW, its fluid level, and gradient (0.433 = fresh water).</div>
+          <div class="zql-inline">P<sub>USDW</sub> = <span class="value" id="zqPusdw">&mdash;</span> psi</div>
 
-          <div class="section-label" style="margin-top:18px;">2. Input parameters</div>
-          <div class="zql-field"><label>Historical injection, cumulative (bbl)</label>
-            <input type="number" id="zqHist" value="2345855" step="any">
-            <div class="input-helper">Cumulative gross injection volume to date. Used for the volumetric radius of in-place fluid (current case).</div>
-          </div>
-          <div class="row3" style="margin-top:12px;">
-            <div><label>Oil produced (stb)</label><input type="number" id="zqOil" value="0" step="any">
-              <div class="input-helper">Optional, for net-voidage reference.</div></div>
-            <div><label>Water produced (stb)</label><input type="number" id="zqWater" value="0" step="any">
-              <div class="input-helper">Optional, for net-voidage reference.</div></div>
-            <div><label>FVF oil, B<sub>o</sub> (RB/STB)</label><input type="number" id="zqFVFo" value="1.0" step="any">
-              <div class="input-helper">Default 1.0.</div></div>
-          </div>
-          <div class="zql-field"><label>Historical net injection (RBBL)</label>
-            <input type="text" id="zqNetInj" readonly>
-            <div class="input-helper">Computed: historical − (oil·B<sub>o</sub> + water). Reference for net voidage; not used in the ZEI or volumetric calc.</div>
-          </div>
-          <div class="row" style="margin-top:12px;">
-            <div><label>Future injection rate, Q (bbl/d)</label><input type="number" id="zqQ" value="2000" step="any">
-              <div class="input-helper">Proposed maximum injection rate. Used in the Bernard equation.</div></div>
-            <div><label>Remaining project life (years)</label><input type="number" id="zqLife" value="6.2" step="any">
-              <div class="input-helper">Future injection duration. Converted to hours (× 8766) for the Bernard equation.</div></div>
-          </div>
-          <div class="row3" style="margin-top:12px;">
-            <div><label>t (hours)</label><input type="text" id="zqThr" readonly>
-              <div class="input-helper">Project life × 8766.</div></div>
-            <div><label>Future injection volume (bbl)</label><input type="text" id="zqFutVol" readonly>
-              <div class="input-helper">Q × life × 365.25.</div></div>
-            <div><label>Gross cumulative (bbl)</label><input type="text" id="zqGrossCum" readonly>
-              <div class="input-helper">Historical + future.</div></div>
+          <div class="zql-field"><label>Top perf, z<sub>i</sub> (ft TVD)</label>
+            <input type="number" id="zqZi" value="7151" step="any">
+            <div class="zql-helper">Top of injection-zone perforations (endangering-pressure datum).</div>
           </div>
 
-          <div class="section-label" style="margin-top:18px;">3. Reservoir &amp; fluid properties</div>
+          <div class="zql-helper" style="margin-top:8px;">Initial reservoir pressure at top perf &mdash; enter directly or as gradient &times; depth.</div>
           <div class="zql-modebar">
-            <label><input type="radio" name="zqThickMode" value="direct" checked> Direct net thickness</label>
-            <label><input type="radio" name="zqThickMode" value="gross"> From gross &times; N:G</label>
+            <label><input type="radio" name="zqPiMode" value="abs" checked> P<sub>i</sub> absolute</label>
+            <label><input type="radio" name="zqPiMode" value="grad"> from gradient</label>
           </div>
-          <div id="zqThickDirect" class="zql-field"><label>Net thickness, H (ft)</label>
-            <input type="number" id="zqHnet" value="553" step="any">
-            <div class="input-helper">Net thickness used in the Bernard and volumetric equations.</div>
+          <div id="zqPiAbsGroup"><input type="number" id="zqPi" value="1874" step="any"></div>
+          <div id="zqPiGradGroup" style="display:none;"><input type="number" id="zqPiGrad" value="0.262" step="any"></div>
+          <div class="zql-inline">P<sub>i</sub> = <span class="value" id="zqPiOut">&mdash;</span> psi<span class="zql-equiv" id="zqPiEquiv"></span></div>
+
+          <div class="zql-helper" style="margin-top:8px;">Injection fluid specific gravity &mdash; enter directly or as a fluid gradient (&divide; 0.433).</div>
+          <div class="zql-modebar">
+            <label><input type="radio" name="zqSGMode" value="sg"> SG<sub>i</sub> direct</label>
+            <label><input type="radio" name="zqSGMode" value="grad" checked> from gradient</label>
           </div>
+          <div id="zqSGdirectGroup" style="display:none;"><input type="number" id="zqSG" value="1.016" step="any"></div>
+          <div id="zqSGgradGroup"><input type="number" id="zqSGgrad" value="0.440" step="any"></div>
+          <div class="zql-inline">SG<sub>i</sub> = <span class="value" id="zqSGout">&mdash;</span><span class="zql-equiv" id="zqSGequiv"></span></div>
+
+          <div class="eq-block" style="margin-top:10px;">
+            &Delta;P<sub>c</sub> = P<sub>USDW</sub> + (z<sub>i</sub> &minus; z<sub>USDW</sub>)&middot;SG<sub>i</sub>&middot;0.433 &minus; P<sub>i</sub> = <span id="zqEndanSub">&mdash;</span>
+            <div class="eq-result">P<sub>c</sub> = <span id="zqPcEq">&mdash;</span> psi &nbsp;&middot;&nbsp; &Delta;P<sub>c</sub> = <span id="zqDPcEq">&mdash;</span> psi</div>
+          </div>
+
+          <div class="zql-band">Reservoir &amp; fluid properties</div>
+          <div class="zql-helper">Net thickness for the Bernard &amp; volumetric equations &mdash; direct, or gross &times; N:G.</div>
+          <div class="zql-modebar">
+            <label><input type="radio" name="zqThickMode" value="direct" checked> Direct net</label>
+            <label><input type="radio" name="zqThickMode" value="gross"> Gross &times; N:G</label>
+          </div>
+          <div id="zqThickDirect"><label>Net thickness, H (ft)</label><input type="number" id="zqHnet" value="553" step="any"></div>
           <div id="zqThickGross" style="display:none;">
-            <div class="row" style="margin-top:6px;">
-              <div><label>Gross thickness (ft)</label><input type="number" id="zqHgross" value="700" step="any">
-                <div class="input-helper">Gross interval thickness.</div></div>
-              <div><label>Net-to-gross (fraction)</label><input type="number" id="zqNG" value="0.79" step="any">
-                <div class="input-helper">Net pay fraction.</div></div>
+            <div class="row">
+              <div><label>Gross thickness (ft)</label><input type="number" id="zqHgross" value="700" step="any"></div>
+              <div><label>Net-to-gross</label><input type="number" id="zqNG" value="0.79" step="any"></div>
             </div>
-            <div class="zql-field"><label>Net thickness, H (ft)</label><input type="text" id="zqHnetComputed" readonly>
-              <div class="input-helper">Computed: gross &times; N:G.</div></div>
+            <div class="zql-field"><label>Net thickness, H (ft)</label><input type="text" id="zqHnetComputed" readonly></div>
           </div>
-          <div class="zql-field"><label>Perforated thickness (ft)</label>
-            <input type="number" id="zqHperf" value="553" step="any">
-            <div class="input-helper">Total perforated interval. Displayed for reference; the calculation uses net thickness.</div>
+          <div class="row" style="margin-top:8px;">
+            <div><label>Perforated thickness (ft)</label><input type="number" id="zqHperf" value="553" step="any">
+              <div class="zql-helper">Reference only; calc uses net thickness.</div></div>
+            <div><label>Porosity, &#981; (%)</label><input type="number" id="zqPhi" value="21.6" step="any">
+              <div class="zql-helper">Net effective porosity, percent.</div></div>
           </div>
-          <div class="zql-field"><label>Porosity, &#981; (%)</label>
-            <input type="number" id="zqPhi" value="21.6" step="any">
-            <div class="input-helper">Net effective porosity. Enter as percent (e.g., 21.6 for 21.6%).</div>
-          </div>
-          <div class="zql-modebar" style="margin-top:10px;">
+          <div class="zql-helper" style="margin-top:8px;">Brine permeability for the Bernard equation &mdash; direct, air &times; multiplier, or Swanson (0.292&middot;k<sub>air</sub><sup>1.186</sup>).</div>
+          <div class="zql-modebar">
             <label><input type="radio" name="zqPermMode" value="direct"> Direct k<sub>brine</sub></label>
-            <label><input type="radio" name="zqPermMode" value="mult"> Air &times; multiplier</label>
+            <label><input type="radio" name="zqPermMode" value="mult"> Air &times; mult</label>
             <label><input type="radio" name="zqPermMode" value="swanson" checked> Swanson</label>
           </div>
-          <div id="zqPermDirect" class="zql-field" style="display:none;"><label>Brine permeability, k<sub>brine</sub> (mD)</label>
-            <input type="number" id="zqKbrine" value="218.45" step="any">
-            <div class="input-helper">Measured brine permeability.</div>
-          </div>
+          <div id="zqPermDirect" style="display:none;"><label>k<sub>brine</sub> (mD)</label><input type="number" id="zqKbrine" value="218.45" step="any"></div>
           <div id="zqPermMult" style="display:none;">
-            <div class="row" style="margin-top:6px;">
-              <div><label>Air permeability, k<sub>air</sub> (mD)</label><input type="number" id="zqKairM" value="265" step="any">
-                <div class="input-helper">Core air permeability.</div></div>
-              <div><label>Multiplier</label><input type="number" id="zqKmult" value="0.7" step="any">
-                <div class="input-helper">Air-to-brine correction (default 0.7).</div></div>
+            <div class="row">
+              <div><label>k<sub>air</sub> (mD)</label><input type="number" id="zqKairM" value="265" step="any"></div>
+              <div><label>Multiplier</label><input type="number" id="zqKmult" value="0.7" step="any"></div>
             </div>
           </div>
-          <div id="zqPermSwan" class="zql-field"><label>Air permeability, k<sub>air</sub> (mD)</label>
-            <input type="number" id="zqKairS" value="265" step="any">
-            <div class="input-helper">Core air permeability. Brine perm via Swanson: k<sub>brine</sub> = 0.292 &middot; k<sub>air</sub><sup>1.186</sup> (Swanson 1981, SPE-8234-PA).</div>
-          </div>
-          <div class="result" style="margin-top:10px;">k<sub>brine</sub> = <span class="value" id="zqKbrineOut">&mdash;</span> mD</div>
-          <div class="row" style="margin-top:12px;">
+          <div id="zqPermSwan"><label>k<sub>air</sub> (mD)</label><input type="number" id="zqKairS" value="265" step="any"></div>
+          <div class="zql-inline">k<sub>brine</sub> = <span class="value" id="zqKbrineOut">&mdash;</span> mD</div>
+          <div class="row" style="margin-top:8px;">
             <div><label>Temperature, T (&deg;F)</label><input type="number" id="zqT" value="150" step="any">
-              <div class="input-helper">Reservoir temperature at the injection zone. Sets water viscosity (temperature-only correlation; salinity correction omitted, &lt;5%).</div></div>
+              <div class="zql-helper">Reservoir T; sets &mu; (temperature-only).</div></div>
             <div><label>Water viscosity, &mu; (cP)</label><input type="number" id="zqMu" value="0.397" step="any">
-              <div class="input-helper">Auto from T via McCain (&mu; = 109.574&middot;T<sup>&minus;1.12166</sup>, T in &deg;F), which gives &asymp;0.40 cP at 150&deg;F versus the commonly cited &asymp;0.43 cP. Override if you prefer the published or a measured value.</div></div>
+              <div class="zql-helper">Auto from T (McCain, &asymp;0.40 cP at 150&deg;F); override for the cited 0.43 or a measured value.</div></div>
           </div>
-          <div class="row3" style="margin-top:12px;">
-            <div><label>Total compressibility, c<sub>t</sub> (1/psi)</label><input type="number" id="zqCt" value="0.000003" step="any">
-              <div class="input-helper">~3 &times; 10&minus;&#8310; /psi for water-saturated zones. Use the c<sub>t</sub> tab for a component estimate.</div></div>
-            <div><label>Skin factor, s</label><input type="number" id="zqSkin" value="0" step="any">
-              <div class="input-helper">Wellbore skin. 0 = none; + = damage; &minus; = stimulation.</div></div>
+          <div class="row3" style="margin-top:8px;">
+            <div><label>c<sub>t</sub> (1/psi)</label><input type="number" id="zqCt" value="0.000003" step="any">
+              <div class="zql-helper">&asymp;3&times;10&minus;&#8310; /psi, water-saturated.</div></div>
+            <div><label>Skin, s</label><input type="number" id="zqSkin" value="0" step="any">
+              <div class="zql-helper">0 none; + damage; &minus; stim.</div></div>
             <div><label>Well efficiency</label><input type="number" id="zqEff" value="1.0" step="any">
-              <div class="input-helper">Informational; negligible effect on ZEI for screening.</div></div>
+              <div class="zql-helper">Informational.</div></div>
           </div>
           <div class="zql-field"><label>Dispersion coefficient, D (ft)</label>
             <select id="zqDisp">
@@ -1829,121 +1871,88 @@
               <option value="65">65 &mdash; Limestone (Warner &amp; Lear 1977)</option>
               <option value="custom">Custom</option>
             </select>
-            <div class="input-helper">Longitudinal dispersion for the term r<sub>disp</sub> = r + 2.3&middot;&radic;(D&middot;r). Sandstone 3 ft; limestone 65 ft.</div>
+            <div class="zql-helper">Dispersion term r<sub>disp</sub> = r + 2.3&middot;&radic;(D&middot;r).</div>
           </div>
           <div id="zqDispCustomWrap" class="zql-field" style="display:none;"><label>Custom D (ft)</label>
             <input type="number" id="zqDispCustom" value="3" step="any"></div>
 
-          <div class="section-label" style="margin-top:18px;">4. Endangering pressure determination</div>
-          <div class="row3">
-            <div><label>Base USDW, z<sub>USDW</sub> (ft TVD)</label><input type="number" id="zqZusdw" value="2384.57" step="any">
-              <div class="input-helper">Depth to base of USDW (deepest water &lt; 10,000 mg/L TDS).</div></div>
-            <div><label>Fluid level in USDW (ft TVD)</label><input type="number" id="zqFluidLevel" value="500" step="any">
-              <div class="input-helper">Depth to top of the USDW water column.</div></div>
-            <div><label>USDW fluid gradient (psi/ft)</label><input type="number" id="zqUsdwGrad" value="0.433" step="any">
-              <div class="input-helper">Default 0.433 (fresh water).</div></div>
+          <div class="zql-band">Injection history &amp; project design</div>
+          <div class="zql-field"><label>Historical injection, cumulative (bbl)</label>
+            <input type="number" id="zqHist" value="2345855" step="any">
+            <div class="zql-helper">Cumulative gross to date; drives the current volumetric radius.</div>
           </div>
-          <div class="result" style="margin-top:10px;">Pressure at base USDW, P<sub>USDW</sub> = <span class="value" id="zqPusdw">&mdash;</span> psi</div>
-
-          <div class="zql-field"><label>Top perf, z<sub>i</sub> (ft TVD)</label>
-            <input type="number" id="zqZi" value="7151" step="any">
-            <div class="input-helper">Depth to top of injection-zone perforations (datum for endangering pressure).</div>
+          <div class="row3" style="margin-top:8px;">
+            <div><label>Oil produced (stb)</label><input type="number" id="zqOil" value="0" step="any"></div>
+            <div><label>Water produced (stb)</label><input type="number" id="zqWater" value="0" step="any"></div>
+            <div><label>FVF oil, B<sub>o</sub></label><input type="number" id="zqFVFo" value="1.0" step="any"></div>
           </div>
-          <div class="zql-modebar" style="margin-top:10px;">
-            <label><input type="radio" name="zqPiMode" value="abs" checked> P<sub>i</sub> absolute</label>
-            <label><input type="radio" name="zqPiMode" value="grad"> P<sub>i</sub> from gradient</label>
+          <div class="zql-helper">Produced volumes (optional) &mdash; net-voidage reference only.</div>
+          <div class="zql-inline">Historical net injection = <span class="value" id="zqNetInj">&mdash;</span> RBBL</div>
+          <div class="row" style="margin-top:8px;">
+            <div><label>Future injection rate, Q (bbl/d)</label><input type="number" id="zqQ" value="2000" step="any">
+              <div class="zql-helper">Proposed maximum rate.</div></div>
+            <div><label>Remaining project life (yr)</label><input type="number" id="zqLife" value="6.2" step="any">
+              <div class="zql-helper">&rarr; t = life &times; 8766 hr.</div></div>
           </div>
-          <div id="zqPiAbsGroup" class="zql-field"><label>Initial reservoir pressure, P<sub>i</sub> (psi)</label>
-            <input type="number" id="zqPi" value="1874" step="any">
-            <div class="input-helper">Static reservoir pressure at top perf, from shut-in surveys or fall-off extrapolation.</div>
-          </div>
-          <div id="zqPiGradGroup" class="zql-field" style="display:none;"><label>IZ pressure gradient (psi/ft)</label>
-            <input type="number" id="zqPiGrad" value="0.262" step="any">
-            <div class="input-helper">Computed P<sub>i</sub> = gradient &times; top perf depth.</div>
-          </div>
-          <div class="result" style="margin-top:8px;">P<sub>i</sub> = <span class="value" id="zqPiOut">&mdash;</span> psi <span class="zql-equiv" id="zqPiEquiv"></span></div>
-
-          <div class="zql-modebar" style="margin-top:10px;">
-            <label><input type="radio" name="zqSGMode" value="sg"> SG direct</label>
-            <label><input type="radio" name="zqSGMode" value="grad" checked> From gradient</label>
-          </div>
-          <div id="zqSGdirectGroup" class="zql-field" style="display:none;"><label>Specific gravity, SG<sub>i</sub></label>
-            <input type="number" id="zqSG" value="1.016" step="any">
-            <div class="input-helper">Relative to fresh water (1.0). Typical 1.00&ndash;1.10 for produced water.</div>
-          </div>
-          <div id="zqSGgradGroup" class="zql-field"><label>Injection fluid gradient (psi/ft)</label>
-            <input type="number" id="zqSGgrad" value="0.440" step="any">
-            <div class="input-helper">Converted to SG by dividing by 0.433 (fresh-water gradient).</div>
-          </div>
-          <div class="result" style="margin-top:8px;">SG<sub>i</sub> = <span class="value" id="zqSGout">&mdash;</span> <span class="zql-equiv" id="zqSGequiv"></span></div>
-
-          <div class="eq-block" style="margin-top:12px;">
-            &Delta;P<sub>c</sub> = P<sub>USDW</sub> + (z<sub>i</sub> &minus; z<sub>USDW</sub>)&middot;SG<sub>i</sub>&middot;0.433 &minus; P<sub>i</sub><br>
-            = <span id="zqEndanSub">&mdash;</span>
-            <div class="eq-result">P<sub>c</sub> = <span id="zqPcEq">&mdash;</span> psi &nbsp;&middot;&nbsp; &Delta;P<sub>c</sub> = <span id="zqDPcEq">&mdash;</span> psi</div>
-          </div>
-          <div class="result-primary">
-            <div class="label">Endangering pressure, P<sub>c</sub></div>
-            <div class="primary" id="zqPc">&mdash;</div>
-            <div class="secondary">P<sub>USDW</sub> + (z<sub>i</sub> &minus; z<sub>USDW</sub>)&middot;SG<sub>i</sub>&middot;0.433</div>
-          </div>
-          <div class="zql-warnbox">
-            <div class="label">Endangering differential pressure, &Delta;P<sub>c</sub></div>
-            <div class="primary" id="zqDPc">&mdash;</div>
-            <div class="secondary">Threshold the Bernard &Delta;P must reach to define a ZEI</div>
-          </div>
-          <div class="result" style="margin-top:10px;">Equivalent endangering gradient, P<sub>c</sub>/z<sub>i</sub> = <span class="value" id="zqEqGrad">&mdash;</span> psi/ft
-            <div class="input-helper">Endangering pressure as a gradient at top perf. Compare to fracture gradient (~0.7&ndash;0.8 psi/ft): if this approaches or exceeds it, the project is unlikely to endanger USDW through hydraulic conduit failure regardless of rate.</div>
+          <div class="row3" style="margin-top:8px;">
+            <div><label>t (hours)</label><input type="text" id="zqThr" readonly></div>
+            <div><label>Future volume (bbl)</label><input type="text" id="zqFutVol" readonly></div>
+            <div><label>Gross cumulative (bbl)</label><input type="text" id="zqGrossCum" readonly></div>
           </div>
         </div>
 
-        <!-- ===================== RIGHT COLUMN ===================== -->
+        <!-- ===================== RIGHT COLUMN — results ===================== -->
         <div class="zql-col">
 
-          <div class="section-label">5. Volumetric radius of injected fluid</div>
-          <div class="eq-block">
-            r = &radic;( V &middot; 5.615 &middot; B<sub>w</sub> / ( &pi; &middot; H &middot; &#981; ) ) &nbsp;&middot;&nbsp; r<sub>disp</sub> = r + 2.3&middot;&radic;(D &middot; r)
+          <div class="zql-keypanel">
+            <div class="khead">Key results</div>
+            <div class="zql-keybody">
+              <div class="zql-zei-label">ZEI radius</div>
+              <div class="zql-zei" id="zqZei">&mdash;</div>
+              <div class="zql-zeinote" id="zqZeiNote">&mdash;</div>
+              <div class="zql-keyrow zql-dpc"><span class="k">Endangering &Delta;P<sub>c</sub></span><span class="v" id="zqDPc">&mdash;</span></div>
+              <div class="zql-keyrow zql-pc"><span class="k">Endangering P<sub>c</sub></span><span class="v" id="zqPc">&mdash;</span></div>
+              <div class="zql-keyrow zql-grad"><span class="k">Equiv. gradient, P<sub>c</sub>/z<sub>i</sub></span><span class="v" id="zqEqGrad">&mdash;</span></div>
+              <div class="zql-kh">kh = <span id="zqKh">&mdash;</span> mD&middot;ft &nbsp;&middot;&nbsp; t = <span id="zqTeq">&mdash;</span> hr</div>
+            </div>
           </div>
-          <table class="zql-dist">
-            <thead><tr><th style="text-align:left;">Case</th><th>Radius (ft)</th><th>With dispersion (ft)</th></tr></thead>
-            <tbody>
-              <tr><td style="text-align:left;">Current (historical injection)</td><td id="zqRcur">&mdash;</td><td id="zqRcurDisp">&mdash;</td></tr>
-              <tr><td style="text-align:left;">End of project life (hist + future)</td><td id="zqRfut">&mdash;</td><td id="zqRfutDisp">&mdash;</td></tr>
-            </tbody>
-          </table>
-          <div class="zql-note">Current case uses <strong>gross</strong> historical injection volume; see Historical net injection (&sect;2) for net-voidage analysis. Volumetric radius is the radial extent of injected pore volume under uniform displacement (B<sub>w</sub> = 1.0). Dispersion correction per Warner &amp; Lear (1977). Informational per CalGEM preference; not used in the ZEI determination.</div>
+          <div class="zql-note">Equivalent gradient vs. fracture gradient (~0.7&ndash;0.8 psi/ft): if it approaches or exceeds fracture, USDW endangerment through a hydraulic conduit is unlikely regardless of rate.</div>
 
-          <div class="section-label" style="margin-top:18px;">6. Future pressure (Bernard / Warner-Lear)</div>
-          <div class="eq-block">
-            &Delta;P(r,t) = (162.6&middot;Q&middot;&mu;) / (k&middot;h) &middot; [ log<sub>10</sub>( k&middot;t / (&#981;&middot;&mu;&middot;c<sub>t</sub>&middot;r&sup2;) ) &minus; 3.32 + 0.87&middot;s ]
-            <div class="eq-result">coefficient 162.6&middot;Q&middot;&mu;/(k&middot;h) = <span id="zqCoeff">&mdash;</span> psi/cycle</div>
+          <div class="zql-band">Volumetric radius of injected fluid</div>
+          <div class="zql-vol">
+            <div class="h">&nbsp;</div><div class="h">Radius (ft)</div><div class="h">+ dispersion (ft)</div>
+            <div class="rl">Current</div><div class="v" id="zqRcur">&mdash;</div><div class="v" id="zqRcurDisp">&mdash;</div>
+            <div class="rl">End of project life</div><div class="v" id="zqRfut">&mdash;</div><div class="v" id="zqRfutDisp">&mdash;</div>
           </div>
-          <div class="result-primary">
-            <div class="label">ZEI radius</div>
-            <div class="primary" id="zqZei">&mdash;</div>
-            <div class="secondary" id="zqZeiNote">&mdash;</div>
-          </div>
-          <div class="result" style="margin-top:8px;">Radius where &Delta;P exceeds P<sub>i</sub>: <span class="value" id="zqRexceed">&mdash;</span>
-            <div class="input-helper">Informational; the radius at which the pressure buildup itself exceeds the original reservoir pressure.</div>
-          </div>
-          <table class="zql-dist">
-            <thead><tr><th>Distance (ft)</th><th>&Delta;P (psi)</th><th>New P (psi)</th><th>ZEI?</th></tr></thead>
-            <tbody id="zqTblBody"></tbody>
-          </table>
+          <div class="zql-note">Current uses <strong>gross</strong> historical injection (see Injection history for net voidage). r = &radic;(V&middot;5.615&middot;B<sub>w</sub>/(&pi;&middot;H&middot;&#981;)); dispersion per Warner &amp; Lear (1977). Informational; not used in the ZEI.</div>
 
-          <div class="zql-modebar" style="margin-top:10px;">
+          <div class="zql-band">&Delta;P vs. distance (Bernard / Warner-Lear)</div>
+          <div class="eq-block">
+            &Delta;P(r,t) = (162.6&middot;Q&middot;&mu;)/(k&middot;h) &middot; [ log<sub>10</sub>( k&middot;t / (&#981;&middot;&mu;&middot;c<sub>t</sub>&middot;r&sup2;) ) &minus; 3.32 + 0.87&middot;s ]
+          </div>
+          <div class="zql-modebar">
             <span style="font-size:12px; color:var(--muted);">x-axis:</span>
             <label><input type="radio" name="zqXMode" value="linear"> Linear</label>
             <label><input type="radio" name="zqXMode" value="log" checked> Log</label>
           </div>
           <div class="zql-chart" id="zqChart"></div>
 
-          <div class="citation-footer">
+          <div class="zql-disttables">
+            <table class="zql-dist">
+              <thead><tr><th>r (ft)</th><th>&Delta;P</th><th>New P</th><th>ZEI?</th></tr></thead>
+              <tbody id="zqTblBodyA"></tbody>
+            </table>
+            <table class="zql-dist">
+              <thead><tr><th>r (ft)</th><th>&Delta;P</th><th>New P</th><th>ZEI?</th></tr></thead>
+              <tbody id="zqTblBodyB"></tbody>
+            </table>
+          </div>
+
+          <div class="zql-refs">
             References: (1) Warner, D.L., and Lehr, J.H., 1977. An Introduction to the Technology of Subsurface
-            Wastewater Injection. U.S. EPA, EPA/600/2-77/240, Ada, OK. (2) Matthews, C.S., and Russell, D.G.,
-            1967. Pressure Buildup and Flow Tests in Wells. SPE Monograph Volume 1. (3) Swanson, B.F., 1981.
-            A Simple Correlation Between Permeabilities and Mercury Capillary Pressures. JPT 33 (12): 2498&ndash;2504.
-            SPE-8234-PA.
+            Wastewater Injection. U.S. EPA, EPA/600/2-77/240, Ada, OK. (2) Matthews, C.S., and Russell, D.G., 1967.
+            Pressure Buildup and Flow Tests in Wells. SPE Monograph Volume 1. (3) Swanson, B.F., 1981. A Simple
+            Correlation Between Permeabilities and Mercury Capillary Pressures. JPT 33 (12): 2498&ndash;2504. SPE-8234-PA.
           </div>
         </div>
       </div>
@@ -3944,7 +3953,7 @@
 
     // §6 — Bernard transient
     const p = { Q:Q, mu:mu, k:k_brine, h:H, t_hr:t_hr, phi:phi, ct:ct, s:s };
-    const coeff = (isFinite(Q)&&isFinite(mu)&&isFinite(k_brine)&&isFinite(H)&&k_brine>0&&H>0) ? 162.6*Q*mu/(k_brine*H) : NaN;
+    const kh = (isFinite(k_brine) && isFinite(H)) ? k_brine * H : NaN;
 
     // ---- render: §2 ----
     zqSetV("zqNetInj",   isFinite(netInj)   ? ratFmtInt(netInj)   : "");
@@ -3973,42 +3982,39 @@
     zqSet("zqRcurDisp", isFinite(rCurD) ? ratFmt(rCurD,1) : "—");
     zqSet("zqRfut",     isFinite(rFut)  ? ratFmt(rFut,1)  : "—");
     zqSet("zqRfutDisp", isFinite(rFutD) ? ratFmt(rFutD,1) : "—");
-    // ---- §6: coefficient + ZEI radius ----
-    zqSet("zqCoeff", isFinite(coeff) ? ratFmt(coeff,3) : "—");
-    let zeiTxt = "—", zeiNote = "—";
+    // ---- §6: kh, t, ZEI radius ----
+    zqSet("zqKh",  isFinite(kh)   ? ratFmtInt(kh)   : "—");
+    zqSet("zqTeq", isFinite(t_hr) ? ratFmtInt(t_hr) : "—");
+    let zeiTxt = "—", zeiNote = "—", zeiNone = false;
     if (isFinite(dPc)){
-      if (dPc <= 0){ zeiTxt = "None"; zeiNote = "Pᵢ is at or above the endangering pressure; ΔP_c ≤ 0."; }
+      if (dPc <= 0){ zeiTxt = "No ZEI"; zeiNone = true; zeiNote = "Pᵢ is at or above the endangering pressure (ΔP_c ≤ 0)."; }
       else {
         const cr = zqCrossRadius(dPc, p);
-        if (cr === 0){ zeiTxt = "None"; zeiNote = "No ZEI defined — modeled ΔP does not exceed ΔP_endanger (" + ratFmtInt(dPc) + " psi) at any radius."; }
-        else if (cr === Infinity){ zeiTxt = "> 100,000 ft"; zeiNote = "ZEI extends beyond 100,000 ft — review inputs."; }
-        else if (isFinite(cr)){ zeiTxt = ratFmtInt(cr) + " ft"; zeiNote = "Radius where ΔP = ΔP_endanger (" + ratFmtInt(dPc) + " psi)."; }
+        if (cr === 0){ zeiTxt = "No ZEI"; zeiNone = true; zeiNote = "Modeled ΔP never reaches ΔP_endanger (" + ratFmtInt(dPc) + " psi) at any radius — negligible risk to USDW."; }
+        else if (cr === Infinity){ zeiTxt = "&gt; 100,000<span class=\"u\"> ft</span>"; zeiNote = "ZEI extends beyond 100,000 ft — review inputs."; }
+        else if (isFinite(cr)){ zeiTxt = ratFmtInt(cr) + "<span class=\"u\"> ft</span>"; zeiNote = "Radius where ΔP = ΔP_endanger (" + ratFmtInt(dPc) + " psi)."; }
       }
     }
-    zqSet("zqZei", zeiTxt);
+    const zeiEl = document.getElementById("zqZei");
+    zeiEl.innerHTML = zeiTxt;
+    zeiEl.classList.toggle("none", zeiNone);
     zqSet("zqZeiNote", zeiNote);
-    let exTxt = "—";
-    if (isFinite(P_i)){
-      const ex = zqCrossRadius(P_i, p);
-      if (ex === 0) exTxt = "None (ΔP never exceeds Pᵢ)";
-      else if (ex === Infinity) exTxt = "> 100,000 ft";
-      else if (isFinite(ex)) exTxt = ratFmtInt(ex) + " ft";
-    }
-    zqSet("zqRexceed", exTxt);
 
-    // ---- distance table + chart points ----
+    // ---- distance tables (two side-by-side 10-row halves) + chart points ----
     const pts = [];
-    let rows = "";
-    ZQ_DIST.forEach(r => {
+    let rowsA = "", rowsB = "";
+    ZQ_DIST.forEach((r, idx) => {
       const dP = zqBernardDP(r, p);
       const newP = (isFinite(dP)&&isFinite(P_i)) ? P_i + dP : NaN;
       const isZei = (isFinite(dP)&&isFinite(dPc)) ? dP >= dPc : false;
-      rows += "<tr><td>" + ratFmtInt(r) + "</td><td>" + (isFinite(dP) ? ratFmt(dP,1) : "—") + "</td><td>"
+      const tr = "<tr><td>" + ratFmtInt(r) + "</td><td>" + (isFinite(dP) ? ratFmt(dP,1) : "—") + "</td><td>"
         + (isFinite(newP) ? ratFmtInt(newP) : "—") + "</td><td class=\"" + (isZei ? "zei-yes" : "zei-no") + "\">"
-        + (isFinite(dP) ? (isZei ? "TRUE" : "FALSE") : "—") + "</td></tr>";
+        + (isFinite(dP) ? (isZei ? "Yes" : "No") : "—") + "</td></tr>";
+      if (idx < 10) rowsA += tr; else rowsB += tr;
       if (isFinite(dP)) pts.push([r, dP]);
     });
-    document.getElementById("zqTblBody").innerHTML = rows;
+    document.getElementById("zqTblBodyA").innerHTML = rowsA;
+    document.getElementById("zqTblBodyB").innerHTML = rowsB;
 
     // ---- chart ----
     const logX = zqMode("zqXMode") === "log";
@@ -4026,7 +4032,28 @@
     zqSet("zqPrintSub", parts.join("  |  "));
   }
 
-  /** Dedicated ΔP-vs-distance chart (custom SVG; makePlot lacks log-X and reference lines).
+  /** "Nice numbers" (Heckbert): round=true rounds to 1/2/5×10^n, false takes the ceiling step. */
+  function zqNiceNum(x, round){
+    if (!(x > 0)) return 1;
+    const exp = Math.floor(Math.log10(x));
+    const f = x / Math.pow(10, exp);
+    let nf;
+    if (round) nf = f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10;
+    else       nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
+    return nf * Math.pow(10, exp);
+  }
+  /** Nice linear axis spanning [dataMin,dataMax] with ~count intervals. Returns {min,max,ticks}. */
+  function zqNiceAxis(dataMin, dataMax, count){
+    if (!(dataMax > dataMin)) dataMax = dataMin + 1;
+    const step = zqNiceNum((dataMax - dataMin) / Math.max(1, count), true);
+    const min = Math.floor(dataMin / step) * step;
+    const max = Math.ceil(dataMax / step) * step;
+    const ticks = [];
+    for (let v = min; v <= max + step * 0.5; v += step) ticks.push(Math.round(v * 1e6) / 1e6);
+    return { min, max, ticks };
+  }
+
+  /** Dedicated ΔP-vs-distance chart (custom SVG; makePlot lacks log-X, nice ticks, and reference lines).
    *  points: [[r,dP],...]; opts: {logX, dPc, zeiR}. Y range includes ΔP_endanger so the threshold shows. */
   function zqPlot(containerId, points, opts){
     opts = opts || {};
@@ -4034,59 +4061,70 @@
     if (!el) return;
     const valid = (points || []).filter(p => isFinite(p[0]) && isFinite(p[1]) && p[0] > 0);
     if (valid.length < 2){ el.innerHTML = ""; return; }
-    const w = 400, h = 210, pad = { l: 52, r: 14, t: 12, b: 38 };
+    const w = 420, h = 220, pad = { l: 50, r: 16, t: 14, b: 40 };
     const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
     const xs = valid.map(p => p[0]), ys = valid.map(p => p[1]);
     const logX = !!opts.logX;
-    const xMin = logX ? Math.max(Math.min(...xs), 0.5) : 0;
-    const xMax = Math.max(...xs);
-    let yMax = Math.max(Math.max(...ys), isFinite(opts.dPc) ? opts.dPc : 0) * 1.05;
-    if (!(yMax > 0)) yMax = 1;
-    const yMin = Math.min(0, Math.min(...ys));
+    // Y axis — nice ticks; range includes the endangering threshold so the reference line is visible.
+    const yAx = zqNiceAxis(Math.min(0, Math.min(...ys)), Math.max(Math.max(...ys), isFinite(opts.dPc) ? opts.dPc : 0), 5);
+    const yMin = yAx.min, yMax = yAx.max;
+    // X axis — decades for log; nice ticks for linear.
+    let xMin, xMax, xTicks;
+    if (logX){
+      xMin = Math.max(Math.min(...xs), 1);
+      xMax = Math.max(...xs);
+      xTicks = [];
+      for (let l = Math.floor(Math.log10(xMin)); l <= Math.ceil(Math.log10(xMax)); l++){
+        const v = Math.pow(10, l);
+        if (v >= xMin * 0.999 && v <= xMax * 1.001) xTicks.push(v);
+      }
+      if (xTicks.length < 2) xTicks = [xMin, xMax];
+    } else {
+      const xAx = zqNiceAxis(0, Math.max(...xs), 5);
+      xMin = xAx.min; xMax = xAx.max; xTicks = xAx.ticks;
+    }
     const lx = v => Math.log10(Math.max(v, 1e-6));
     const X = logX
       ? x => pad.l + (lx(x) - lx(xMin)) / (lx(xMax) - lx(xMin)) * pw
       : x => pad.l + (x - xMin) / (xMax - xMin) * pw;
     const Y = y => pad.t + ph - (y - yMin) / (yMax - yMin) * ph;
+    const fmt = v => (Math.round(v * 100) / 100).toLocaleString("en-US");
     const GRID = "#e2e8f0", AXIS = "#cbd5e1", TICK = "#64748b", LABEL = "#0f172a", LINE = "#1e63b0", REF = "#b91c1c";
     let svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;" font-family="Inter, system-ui, sans-serif">';
     svg += '<rect x="' + pad.l + '" y="' + pad.t + '" width="' + pw + '" height="' + ph + '" fill="#fafbfc" stroke="' + GRID + '"/>';
-    for (let i = 1; i < 5; i++){ const yy = pad.t + ph * i/5; svg += '<line x1="' + pad.l + '" y1="' + yy + '" x2="' + (pad.l+pw) + '" y2="' + yy + '" stroke="' + GRID + '" stroke-dasharray="3 3"/>'; }
-    // X ticks
-    if (logX){
-      for (let l = Math.floor(lx(xMin)); l <= Math.ceil(lx(xMax)); l++){
-        const xv = Math.pow(10, l); if (xv < xMin || xv > xMax) continue; const x = X(xv);
-        svg += '<line x1="' + x.toFixed(1) + '" y1="' + (pad.t+ph) + '" x2="' + x.toFixed(1) + '" y2="' + (pad.t+ph+4) + '" stroke="' + AXIS + '"/>';
-        svg += '<text x="' + x.toFixed(1) + '" y="' + (pad.t+ph+16) + '" font-size="10" text-anchor="middle" fill="' + TICK + '">' + (xv >= 1000 ? (xv/1000)+"k" : xv) + '</text>';
-      }
-    } else {
-      for (let i = 0; i <= 5; i++){ const xv = xMin + (xMax-xMin)*i/5; const x = X(xv);
-        svg += '<line x1="' + x.toFixed(1) + '" y1="' + (pad.t+ph) + '" x2="' + x.toFixed(1) + '" y2="' + (pad.t+ph+4) + '" stroke="' + AXIS + '"/>';
-        svg += '<text x="' + x.toFixed(1) + '" y="' + (pad.t+ph+16) + '" font-size="10" text-anchor="middle" fill="' + TICK + '">' + Math.round(xv) + '</text>';
-      }
-    }
-    // Y ticks
-    for (let i = 0; i <= 5; i++){ const yv = yMin + (yMax-yMin)*i/5; const y = Y(yv);
+    // Y gridlines + ticks
+    yAx.ticks.forEach(yv => {
+      if (yv < yMin - 1e-6 || yv > yMax + 1e-6) return;
+      const y = Y(yv);
+      svg += '<line x1="' + pad.l + '" y1="' + y.toFixed(1) + '" x2="' + (pad.l+pw) + '" y2="' + y.toFixed(1) + '" stroke="' + GRID + '" stroke-dasharray="3 3"/>';
       svg += '<line x1="' + (pad.l-4) + '" y1="' + y.toFixed(1) + '" x2="' + pad.l + '" y2="' + y.toFixed(1) + '" stroke="' + AXIS + '"/>';
-      svg += '<text x="' + (pad.l-6) + '" y="' + (y+3).toFixed(1) + '" font-size="10" text-anchor="end" fill="' + TICK + '">' + shortNum(yv) + '</text>';
-    }
+      svg += '<text x="' + (pad.l-6) + '" y="' + (y+3).toFixed(1) + '" font-size="10" text-anchor="end" fill="' + TICK + '">' + fmt(yv) + '</text>';
+    });
+    // X ticks
+    xTicks.forEach(xv => {
+      if (xv < xMin * 0.999 || xv > xMax * 1.001) return;
+      const x = X(xv);
+      svg += '<line x1="' + x.toFixed(1) + '" y1="' + (pad.t+ph) + '" x2="' + x.toFixed(1) + '" y2="' + (pad.t+ph+4) + '" stroke="' + AXIS + '"/>';
+      svg += '<text x="' + x.toFixed(1) + '" y="' + (pad.t+ph+15) + '" font-size="10" text-anchor="middle" fill="' + TICK + '">' + fmt(xv) + '</text>';
+    });
     // ΔP curve
     const d = valid.map((p,i) => (i?"L":"M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
     svg += '<path d="' + d + '" stroke="' + LINE + '" fill="none" stroke-width="2" stroke-linejoin="round"/>';
-    // endangering threshold (horizontal dashed red)
+    // endangering threshold (horizontal dashed red, thicker; label at left to avoid the data)
     if (isFinite(opts.dPc) && opts.dPc >= yMin && opts.dPc <= yMax){
       const y = Y(opts.dPc);
-      svg += '<line x1="' + pad.l + '" y1="' + y.toFixed(1) + '" x2="' + (pad.l+pw) + '" y2="' + y.toFixed(1) + '" stroke="' + REF + '" stroke-width="1.5" stroke-dasharray="5 3"/>';
-      svg += '<text x="' + (pad.l+pw-2) + '" y="' + (y-3).toFixed(1) + '" font-size="9.5" text-anchor="end" fill="' + REF + '">ΔP_endanger = ' + shortNum(opts.dPc) + ' psi</text>';
+      svg += '<line x1="' + pad.l + '" y1="' + y.toFixed(1) + '" x2="' + (pad.l+pw) + '" y2="' + y.toFixed(1) + '" stroke="' + REF + '" stroke-width="2" stroke-dasharray="6 3"/>';
+      svg += '<text x="' + (pad.l+4) + '" y="' + (y-4).toFixed(1) + '" font-size="9.5" font-weight="600" fill="' + REF + '">ΔP_endanger = ' + Math.round(opts.dPc).toLocaleString("en-US") + ' psi</text>';
     }
-    // ZEI radius (vertical dashed red)
+    // ZEI radius (vertical dashed red, thicker; label anchored to stay on-canvas)
     if (isFinite(opts.zeiR) && opts.zeiR >= xMin && opts.zeiR <= xMax){
       const x = X(opts.zeiR);
-      svg += '<line x1="' + x.toFixed(1) + '" y1="' + pad.t + '" x2="' + x.toFixed(1) + '" y2="' + (pad.t+ph) + '" stroke="' + REF + '" stroke-width="1.5" stroke-dasharray="5 3"/>';
-      svg += '<text x="' + (x+3).toFixed(1) + '" y="' + (pad.t+10) + '" font-size="9.5" fill="' + REF + '">ZEI = ' + Math.round(opts.zeiR).toLocaleString("en-US") + ' ft</text>';
+      const right = x > pad.l + pw * 0.6;
+      svg += '<line x1="' + x.toFixed(1) + '" y1="' + pad.t + '" x2="' + x.toFixed(1) + '" y2="' + (pad.t+ph) + '" stroke="' + REF + '" stroke-width="2" stroke-dasharray="6 3"/>';
+      svg += '<text x="' + (right ? x-4 : x+4).toFixed(1) + '" y="' + (pad.t+11) + '" font-size="9.5" font-weight="600" text-anchor="' + (right ? "end" : "start") + '" fill="' + REF + '">ZEI = ' + Math.round(opts.zeiR).toLocaleString("en-US") + ' ft</text>';
     }
-    svg += '<text x="' + (pad.l+pw/2) + '" y="' + (h-4) + '" font-size="11" font-weight="500" text-anchor="middle" fill="' + LABEL + '">Radial distance, r (ft)' + (logX ? " — log" : "") + '</text>';
-    svg += '<text x="13" y="' + (pad.t+ph/2) + '" font-size="11" font-weight="500" text-anchor="middle" fill="' + LABEL + '" transform="rotate(-90 13 ' + (pad.t+ph/2) + ')">ΔP (psi)</text>';
+    svg += '<text x="' + (pad.l+pw/2) + '" y="' + (h-4) + '" font-size="10.5" font-weight="500" text-anchor="middle" fill="' + LABEL + '">Radial distance, r (ft)' + (logX ? " — log scale" : "") + '</text>';
+    svg += '<text x="12" y="' + (pad.t+ph/2) + '" font-size="10.5" font-weight="500" text-anchor="middle" fill="' + LABEL + '" transform="rotate(-90 12 ' + (pad.t+ph/2) + ')">ΔP (psi)</text>';
     svg += '</svg>';
     el.innerHTML = svg;
   }
