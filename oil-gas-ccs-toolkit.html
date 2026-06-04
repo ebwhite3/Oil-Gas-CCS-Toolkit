@@ -624,6 +624,40 @@
     #zeiql .zql-note, #zeiql .zql-refs { font-size: 7px; margin-top: 3px; padding-top: 3px; }
     #zeiql details { display: none; }
   }
+
+  /* ===== Darcy Permeability (RAT) — single-page print ===== */
+  @media print {
+    #rat, #rat * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #rat .card { padding: 0; border: none; box-shadow: none; }
+    #rat .card > h2 + p { display: none; }
+    #rat .section-label { font-size: 9px; margin: 4px 0 2px 0; }
+    #rat label { font-size: 8.5px; }
+    #rat input, #rat select { padding: 1px 4px; font-size: 8.5px; }
+    #rat .input-helper { font-size: 7.5px; line-height: 1.25; margin-top: 1px; }
+    #rat .row, #rat .row3 { gap: 6px; }
+    /* P_e mode toggle bar (inline flex container with three radios) */
+    #rat .card > div[style*="flex-wrap"] { gap: 8px; margin-bottom: 3px; }
+    #rat .card > div[style*="flex-wrap"] label { font-size: 8px !important; }
+    /* §6 result-primary */
+    #rat .result-primary { padding: 5px 9px; margin-top: 4px; }
+    #rat .result-primary .label { font-size: 9px; }
+    #rat .result-primary .primary { font-size: 15px; }
+    #rat .result-primary .secondary { font-size: 8px; }
+    /* §5 & §6 result grids */
+    #rat .result-grid { gap: 3px 8px; margin-top: 4px; }
+    #rat .result-grid .kv { padding: 3px 7px; }
+    #rat .result-grid .kv .k { font-size: 7.5px; }
+    #rat .result-grid .kv .v { font-size: 10px; }
+    /* Italic note after results — kept visible (explains s=0 vs s>0) but compressed */
+    #rat .result-grid + p { font-size: 7.5px; margin: 4px 0 0 0; }
+    /* §7 sensitivity intro paragraph */
+    #rat .section-label + p { font-size: 7.5px; margin: 0 0 2px 0; }
+    /* §7 sensitivity table */
+    #rat table.sensitivity { font-size: 7.5px; }
+    #rat table.sensitivity th, #rat table.sensitivity td { padding: 1px 4px; }
+    #rat .sat-warn { font-size: 7.5px; padding: 3px 6px; }
+    #rat details { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -1669,6 +1703,21 @@
         </div>
       </div>
 
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Assumed skin factor, s</label>
+          <input type="number" id="ratSkin" value="0" step="any">
+          <div class="input-helper">
+            Dimensionless. Default 0 &rArr; result is the effective (skin-included) permeability from
+            the survey (current behavior). Enter a positive value to assume damage and infer the higher
+            intrinsic permeability: k = 141.2 &middot; q &middot; &mu; &middot; B &middot; (ln(r<sub>e</sub>/r<sub>w</sub>) + s) /
+            (h &middot; &Delta;P). Single-rate data cannot determine skin &mdash; this is an explicit
+            assumption; report s alongside k in any submittal.
+          </div>
+        </div>
+        <div></div>
+      </div>
+
       <div class="section-label" style="margin-top:18px;">5. Intermediate values (QC)</div>
       <div class="result-grid">
         <div class="kv"><div class="k">P<sub>e</sub> (computed / entered)</div><div class="v" id="ratPeOut">—</div><div class="k" id="ratPeSource">—</div></div>
@@ -1686,7 +1735,7 @@
       <div class="result-primary">
         <div class="label">Effective permeability, k<sub>eff</sub></div>
         <div class="primary" id="ratKeff">—</div>
-        <div class="secondary">141.2 · q · μ · B · ln(r<sub>e</sub>/r<sub>w</sub>) / (h · ΔP), steady-state radial</div>
+        <div class="secondary">141.2 · q · μ · B · (ln(r<sub>e</sub>/r<sub>w</sub>) + s) / (h · ΔP), steady-state radial (s = 0 ⇒ skin-included)</div>
       </div>
       <div class="result-grid">
         <div class="kv"><div class="k">Permeability-thickness, kh</div><div class="v" id="ratKh">—</div><div class="k">mD-ft</div></div>
@@ -1694,14 +1743,17 @@
         <div class="kv"><div class="k">Specific injectivity, II/h</div><div class="v" id="ratIIh">—</div><div class="k">bbl/d/psi/ft</div></div>
       </div>
       <p style="margin:12px 0 0 0; font-size:12.5px; color:var(--muted); font-style:italic;">
-        This is the effective (skin-included) permeability assuming steady-state radial flow. To
-        separate intrinsic k from skin, a pressure transient analysis (PTA) is required.
+        With assumed skin s = 0 (default), this is the effective (skin-included) permeability from the
+        survey under steady-state radial flow. With a positive s entered above, it is the inferred
+        intrinsic permeability corresponding to that assumption — single-rate data cannot determine
+        skin, so any non-zero s should be reported alongside k.
       </p>
 
       <div class="section-label" style="margin-top:18px;">7. Sensitivity — k<sub>eff</sub> (mD) vs. P<sub>e</sub> and h<sub>eff</sub></div>
       <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
         Columns: P<sub>e</sub> at ±20% in 10% steps. Rows: h<sub>eff</sub> at 0.50× to 1.50× in 25% steps.
-        All other inputs (q, μ, B, r<sub>e</sub>, r<sub>w</sub>, P<sub>wf</sub>) held constant at base values.
+        All other inputs (q, μ, B, r<sub>e</sub>, r<sub>w</sub>, P<sub>wf</sub>) held constant at base
+        values, with skin held at the entered s across the matrix.
         Base case (center cell) highlighted; cells within ±50% of base k tinted lighter.
       </p>
       <div style="overflow-x:auto;">
@@ -1715,8 +1767,8 @@
         <summary>8. Methods, references, and caveats</summary>
         <ul style="font-size:13px;">
           <li><strong>Darcy radial flow (steady-state, field units):</strong>
-            k (mD) = 141.2 · q (bbl/d) · μ (cP) · B (RB/STB) · ln(r<sub>e</sub>/r<sub>w</sub>) / (h (ft) · ΔP (psi)),
-            with ΔP = P<sub>wf</sub> − P<sub>e</sub>.
+            k (mD) = 141.2 · q (bbl/d) · μ (cP) · B (RB/STB) · (ln(r<sub>e</sub>/r<sub>w</sub>) + s) / (h (ft) · ΔP (psi)),
+            with ΔP = P<sub>wf</sub> − P<sub>e</sub> and s = assumed skin (dimensionless; s = 0 ⇒ bare radial form).
           </li>
           <li><strong>Bottomhole flowing pressure:</strong> P<sub>wf</sub> = P<sub>surf</sub> + P<sub>hydrostatic</sub> − ΔP<sub>friction</sub>,
             with P<sub>hydrostatic</sub> = L · gradient.</li>
@@ -1732,9 +1784,12 @@
           <li><strong>References:</strong> Earlougher (1977), <em>Advances in Well Test Analysis</em>, SPE Monograph 5;
             Crane Technical Paper No. 410; Swamee & Jain (1976), "Explicit equations for pipe-flow problems";
             McCain (1990), <em>The Properties of Petroleum Fluids</em>, 2nd ed.</li>
-          <li><strong>Effective vs intrinsic k:</strong> result is effective (skin-included) permeability.
-            Positive skin (damage) causes k<sub>eff</sub> to underestimate intrinsic k; negative skin
-            (stimulation) causes overestimation. To resolve, run a pressure transient analysis.</li>
+          <li><strong>Effective vs intrinsic k:</strong> with s = 0 the result is effective
+            (skin-included) permeability. Positive skin (damage) causes the s = 0 result to
+            underestimate intrinsic k; negative skin (stimulation) causes overestimation. To resolve
+            true skin, run a pressure transient analysis; entering a non-zero s in §4 applies the
+            correction explicitly under that assumption — report the assumed s alongside k in any
+            submittal.</li>
           <li><strong>Steady-state assumption:</strong> requires stabilized rate and pressure at the time
             of the survey. If taken during transient conditions (recent rate change, recent startup or
             shut-in), k<sub>eff</sub> will be biased. Allow 1–2 hours of stable injection before recording.</li>
@@ -3643,11 +3698,13 @@
     if (d_i_in <= 0) return NaN;
     return 11.46e-6 * f * rho_lbgal * q_bbld * q_bbld * L_ft / Math.pow(d_i_in, 5);
   }
-  // Darcy steady-state radial. q in bbl/d, μ cP, B RB/STB, re/rw ft, h ft, ΔP psi → k in mD.
-  function ratPerm(q, mu, B, re, rw, h, dP) {
+  // Darcy steady-state radial. q in bbl/d, μ cP, B RB/STB, re/rw ft, h ft, ΔP psi, s dimensionless → k in mD.
+  // s = assumed skin (NaN/missing ⇒ 0; s = 0 reduces to the bare radial form, current behavior).
+  function ratPerm(q, mu, B, re, rw, h, dP, s) {
     if (![q, mu, B, re, rw, h, dP].every(v => isFinite(v) && v > 0)) return NaN;
     if (re <= rw) return NaN;
-    return (141.2 * q * mu * B * Math.log(re / rw)) / (h * dP);
+    const skin = isFinite(s) ? s : 0;
+    return (141.2 * q * mu * B * (Math.log(re / rw) + skin)) / (h * dP);
   }
   function ratFmt(x, digits) {
     if (!isFinite(x)) return "—";
@@ -3689,6 +3746,7 @@
     const r_e    = parseFloat(document.getElementById("ratRe").value);
     const h_eff  = parseFloat(document.getElementById("ratHeff").value);
     const h_perf = parseFloat(document.getElementById("ratHperf").value);
+    const s      = parseFloat(document.getElementById("ratSkin").value);
 
     // P_e from selected mode
     const mode = document.querySelector('input[name="ratPeMode"]:checked').value;
@@ -3726,7 +3784,7 @@
     const Pwf = (isFinite(P_surf) && isFinite(Phydro) && isFinite(dPf)) ? P_surf + Phydro - dPf : NaN;
     const dP = (isFinite(Pwf) && isFinite(P_e)) ? Pwf - P_e : NaN;
     const lnRatio = (isFinite(r_e) && isFinite(r_w) && r_e > 0 && r_w > 0 && r_e > r_w) ? Math.log(r_e / r_w) : NaN;
-    const k_eff = ratPerm(q, mu, B, r_e, r_w, h_eff, dP);
+    const k_eff = ratPerm(q, mu, B, r_e, r_w, h_eff, dP, s);
     const kh = (isFinite(k_eff) && isFinite(h_eff)) ? k_eff * h_eff : NaN;
     const II = (isFinite(q) && isFinite(dP) && dP > 0) ? q / dP : NaN;
     const IIh = (isFinite(II) && isFinite(h_eff) && h_eff > 0) ? II / h_eff : NaN;
@@ -3777,7 +3835,7 @@
         const cells = RAT_PE_MULTS.map((pm, ci) => {
           const Pe_s = isFinite(P_e) ? P_e * pm : NaN;
           const dP_s = (isFinite(Pwf) && isFinite(Pe_s)) ? Pwf - Pe_s : NaN;
-          const k_s = ratPerm(q, mu, B, r_e, r_w, h_s, dP_s);
+          const k_s = ratPerm(q, mu, B, r_e, r_w, h_s, dP_s, s);
           const isAnchor = (pm === 1.0 && hm === 1.0);
           const isCol = (pm === 1.0);
           let cls = isCol ? "current" : "";
@@ -3823,7 +3881,7 @@
   });
   // Wire all RAT inputs (T_BH is already wired above, so excluded here to avoid double-wiring)
   ["ratPsurf","ratQ","ratL","ratDi","ratEps","ratRw","ratGrad","ratRho","ratMu","ratB",
-   "ratPeA","ratZfl","ratGradS","ratGradR","ratRe","ratHeff","ratHperf"]
+   "ratPeA","ratZfl","ratGradS","ratGradR","ratRe","ratHeff","ratHperf","ratSkin"]
     .forEach(id => document.getElementById(id).oninput = updateRat);
   document.querySelectorAll('input[name="ratPeMode"]').forEach(r => r.onchange = updateRat);
   updateRat();
