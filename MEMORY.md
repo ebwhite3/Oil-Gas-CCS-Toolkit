@@ -158,8 +158,11 @@ These are intentional simplifications, not bugs. Do not "fix" them without discu
 
 ## Deployment
 
-- Current host: Netlify Drop (manual upload of the single `oil-gas-ccs-toolkit.html` file)
-- Repo: GitHub (URL not stored here for portability)
+- Live public URL: https://classy-alpaca-10aa4f.netlify.app (Netlify, deployed 2026-06-05)
+- Netlify site ID: 8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e | site name: classy-alpaca-10aa4f
+- To redeploy: POST zip to https://api.netlify.com/api/v1/sites/8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e/deploys with Authorization: Bearer <token> and Content-Type: application/zip. Zip must contain index.html (the toolkit) + public/numeric-solutions-logo.png.
+- Netlify personal access token: create once at app.netlify.com/user/applications, reuse for all future deploys. Do NOT paste the token in chat — store in a password manager and provide it verbally or via env var.
+- Repo: GitHub (ebwhite3/Oil-Gas-CCS-Toolkit)
 - Branches: `main` only
 - Cross-machine workflow: i9 workstation ↔ OptiPlex via git pull/push; never via Dropbox/OneDrive
 - Local LAN preview: `serve.bat` (repo root) runs `python -m http.server 8000 --bind 0.0.0.0` and serves its own folder, so it keeps working if the folder is moved/renamed. Double-click to start. Reachable on the LAN at `http://10.66.1.10:8000/oil-gas-ccs-toolkit.html`. Use `--bind 127.0.0.1` to restrict to localhost.
