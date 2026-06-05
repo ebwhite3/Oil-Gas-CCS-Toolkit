@@ -158,8 +158,8 @@ These are intentional simplifications, not bugs. Do not "fix" them without discu
 
 ## Deployment
 
-- Live public URL: https://classy-alpaca-10aa4f.netlify.app (Netlify, deployed 2026-06-05)
-- Netlify site ID: 8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e | site name: classy-alpaca-10aa4f
+- Live public URL: https://nsllc-toolkit.netlify.app (Netlify, deployed 2026-06-05)
+- Netlify site ID: 8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e | site name: nsllc-toolkit
 - To redeploy: POST zip to https://api.netlify.com/api/v1/sites/8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e/deploys with Authorization: Bearer <token> and Content-Type: application/zip. Zip must contain index.html (the toolkit) + public/numeric-solutions-logo.png.
 - Netlify personal access token: create once at app.netlify.com/user/applications, reuse for all future deploys. Do NOT paste the token in chat — store in a password manager and provide it verbally or via env var.
 - Repo: GitHub (ebwhite3/Oil-Gas-CCS-Toolkit)
