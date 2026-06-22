@@ -158,10 +158,11 @@ These are intentional simplifications, not bugs. Do not "fix" them without discu
 
 ## Deployment
 
-- Live public URL: https://nsllc-toolkit.netlify.app (Netlify, deployed 2026-06-05)
-- Netlify site ID: 8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e | site name: nsllc-toolkit
-- To redeploy: POST zip to https://api.netlify.com/api/v1/sites/8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e/deploys with Authorization: Bearer <token> and Content-Type: application/zip. Zip must contain index.html (the toolkit) + public/numeric-solutions-logo.png.
-- Netlify personal access token: create once at app.netlify.com/user/applications, reuse for all future deploys. Do NOT paste the token in chat — store in a password manager and provide it verbally or via env var.
+- Live public URL: https://nsllc-toolkit.pages.dev (Cloudflare Pages, project `nsllc-toolkit`, moved 2026-06-22)
+- Deploy is direct-upload via Wrangler. Credentials (API token + account_id) live in `_ClaudeOS/00_Resources/.cloudflare.json`; that file's `projects` map also tracks this project. Token is never pasted in chat.
+- To redeploy: stage a folder containing `index.html` (copy of oil-gas-ccs-toolkit.html) + `public/numeric-solutions-logo.png`, then with `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` set, run `npx wrangler pages deploy <folder> --project-name nsllc-toolkit --branch main`. Requires Node (installed via `winget install OpenJS.NodeJS.LTS`).
+- Verify after deploy: both https://nsllc-toolkit.pages.dev (200, text/html) and .../public/numeric-solutions-logo.png (200, image/png) — the logo is a relative asset and must be included or it 404s.
+- LEGACY (being retired by Eric): Netlify site https://nsllc-toolkit.netlify.app, site ID 8aa6f9a8-aa59-4e3e-9e70-7776c653dc2e. Same zip-upload redeploy via Netlify API if ever needed.
 - Repo: GitHub (ebwhite3/Oil-Gas-CCS-Toolkit)
 - Branches: `main` only
 - Cross-machine workflow: i9 workstation ↔ OptiPlex via git pull/push; never via Dropbox/OneDrive
