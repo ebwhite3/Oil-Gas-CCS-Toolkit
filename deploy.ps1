@@ -11,8 +11,9 @@
 #   pwsh -File deploy.ps1 -Config "D:\path\.cloudflare.json"   # non-default creds
 #
 # Requirements: Node.js (npx) on PATH  ->  winget install OpenJS.NodeJS.LTS
-# Credentials:  .cloudflare.json holding { token, account_id }. Defaults to the
-#               _ClaudeOS copy; never echoed or committed.
+# Credentials:  .cloudflare.json holding { token, account_id }. Auto-located in
+#               the current user's _ClaudeOS Dropbox copy (works on both the i9
+#               and the OptiPlex via %USERPROFILE%); never echoed or committed.
 #
 # Like serve.bat, this operates on its own folder ($PSScriptRoot), so it keeps
 # working if the toolkit folder is moved or renamed - keep deploy.ps1 alongside
@@ -20,11 +21,26 @@
 # =============================================================================
 [CmdletBinding()]
 param(
-  [string]$Config = "C:\Users\ebwhi\Dropbox (Personal)\_ClaudeCowork\_ClaudeOS\00_Resources\.cloudflare.json",
+  [string]$Config,
   [string]$Project = "nsllc-toolkit",
   [switch]$SkipVerify
 )
 $ErrorActionPreference = "Stop"
+
+# Resolve the credentials file. An explicit -Config wins; otherwise try the
+# current user's Dropbox (covers both the i9 [ebwhi] and OptiPlex [Admin] via
+# %USERPROFILE%), then the two known absolute paths as a fallback.
+if (-not $Config) {
+  $candidates = @(
+    (Join-Path $env:USERPROFILE "Dropbox (Personal)\_ClaudeCowork\_ClaudeOS\00_Resources\.cloudflare.json"),
+    "C:\Users\ebwhi\Dropbox (Personal)\_ClaudeCowork\_ClaudeOS\00_Resources\.cloudflare.json",
+    "C:\Users\Admin\Dropbox (Personal)\_ClaudeCowork\_ClaudeOS\00_Resources\.cloudflare.json"
+  )
+  $Config = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+  if (-not $Config) {
+    throw "Could not auto-locate .cloudflare.json. Tried:`n  $($candidates -join "`n  ")`nPass it explicitly with -Config `"<path>`"."
+  }
+}
 
 $ScriptDir = $PSScriptRoot
 $SourceHtml = Join-Path $ScriptDir "oil-gas-ccs-toolkit.html"
