@@ -93,20 +93,27 @@ These reflect regulatory standards, professional style conventions, and reservoi
 
 **Unit convention for friction and Reynolds calculations (IMPORTANT — common source of unit-mismatch bugs):**
 
-The standard Fanning friction equation in petroleum field units uses density in **lb/gal**, not lb/ft³:
+The friction and Reynolds field-unit forms in this toolkit use density in **lb/gal**, with **f the Fanning friction factor**:
 
 ```
-ΔP_friction (psi) = (11.46 × 10⁻⁶) × f × ρ × q² × L / d⁵
-Re = 92.1 × ρ × q / (μ × d)
+ΔP_friction (psi) = (5.50 × 10⁻⁶) × f × ρ × q² × L / d⁵     (f = Fanning)
+Re                = (11.05)       × ρ × q / (μ × d)
 ```
 
 where ρ is in **lb/gal**, q in bbl/d, L in ft, d in inches, μ in cP.
 
-**User-facing density inputs must remain in lb/ft³** because that is what petroleum engineers expect. **Internally, convert lb/ft³ → lb/gal by dividing by 7.481** before applying the friction or Reynolds equations.
+These two constants were verified from first principles (pure-SI derivation) in June 2026. **Do not revert them to the older 11.46×10⁻⁶ and 92.1 values** — those are wrong for lb/gal: 92.1 is the *specific-gravity* Reynolds constant (using it with lb/gal overstates Re ~8.3×), and 11.46×10⁻⁶ is ~2× too high (it drops the ½ in the ρv²/2 dynamic-pressure term).
 
-When defining a fluid-type defaults table (e.g., fresh water, light produced water, brine), store both lb/ft³ (for display) and lb/gal (for internal calc). Document the conversion in code comments with a reference (Bourgoyne et al., "Applied Drilling Engineering," SPE Textbook Series, or Lyons Handbook of Petroleum Engineering).
+**The governing rule is that the constant must match the density unit.** Equivalent, self-consistent constant sets:
 
-Failing to do this conversion produces friction-loss values ~7.5× too high and effective permeability ~7.5× too low. If a test case for a friction/permeability calc gives results outside the expected sanity range, suspect a unit mismatch first.
+| Quantity | lb/gal form | lb/ft³ form | other |
+|---|---|---|---|
+| Friction ΔP (Fanning) | 5.50×10⁻⁶ | 7.36×10⁻⁷ | v-based: f·ρ(lb/gal)·v²·L/(25.8·d) |
+| Reynolds | 11.05 | 1.48 | 92.1 × **SG** (specific gravity) |
+
+**User-facing density inputs must remain in lb/ft³** because that is what petroleum engineers expect. **Internally, convert lb/ft³ → lb/gal by dividing by 7.481** before applying the lb/gal forms above. When defining a fluid-type defaults table (fresh water, light produced water, brine), store both lb/ft³ (for display) and lb/gal (for internal calc). Document the conversion in code comments with a reference (Bourgoyne et al., "Applied Drilling Engineering," SPE Textbook Series, or Lyons, Handbook of Petroleum Engineering).
+
+A constant/unit mismatch (e.g., the SG constant 92.1 applied to lb/gal, or the lb/ft³ constant applied to lb/gal) scales the result by the density-conversion factor and is the most common bug in these calcs. If a friction/permeability test case falls outside the expected sanity range, suspect a constant/unit mismatch first — and re-derive, do not tune the constant.
 
 ### Output for permit applications
 

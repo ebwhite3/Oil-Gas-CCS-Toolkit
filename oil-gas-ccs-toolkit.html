@@ -1777,10 +1777,14 @@
           <li><strong>Bottomhole flowing pressure:</strong> P<sub>wf</sub> = P<sub>surf</sub> + P<sub>hydrostatic</sub> − ΔP<sub>friction</sub>,
             with P<sub>hydrostatic</sub> = L · gradient.</li>
           <li><strong>Fanning friction equation (field units):</strong>
-            ΔP<sub>f</sub> (psi) = 11.46×10⁻⁶ · f · ρ · q² · L / d<sub>i</sub>⁵,
-            with ρ in lb/gal (calculator converts the lb/ft³ input ÷ 7.481), q in bbl/d, L in ft,
-            d<sub>i</sub> in inches.</li>
-          <li><strong>Reynolds number:</strong> Re = 92.1 · ρ · q / (μ · d<sub>i</sub>), same units as friction.</li>
+            ΔP<sub>f</sub> (psi) = 5.50×10⁻⁶ · f · ρ · q² · L / d<sub>i</sub>⁵,
+            with f the Fanning friction factor, ρ in lb/gal (calculator converts the lb/ft³ input ÷ 7.481),
+            q in bbl/d, L in ft, d<sub>i</sub> in inches. Derived from ΔP = 2·f·ρ·v²·L/D; equal to the
+            v-based form f·ρ·v²·L/(25.8·d<sub>i</sub>). The equivalent lb/ft³ constant is 7.36×10⁻⁷.</li>
+          <li><strong>Reynolds number:</strong> Re = 11.05 · ρ · q / (μ · d<sub>i</sub>), ρ in lb/gal,
+            same units as friction. Equivalent to 1.48 · ρ(lb/ft³) · q / (d<sub>i</sub> · μ) and to
+            92.1 · SG · q / (d<sub>i</sub> · μ); the specific-gravity constant 92.1 must not be applied to
+            lb/gal.</li>
           <li><strong>Swamee-Jain explicit (Fanning):</strong> f = 0.0625 / [log<sub>10</sub>((ε/d<sub>i</sub>)/3.7 + 5.74/Re<sup>0.9</sup>)]²,
             valid for Re > 4000. Laminar fallback (Re ≤ 4000): f = 16/Re.</li>
           <li><strong>Water viscosity (McCain 1990, fresh water at atmospheric P):</strong>
@@ -3682,9 +3686,11 @@
     return 109.574 * Math.pow(T_F, -1.12166);
   }
   // Reynolds number, ρ in lb/gal, q in bbl/d, μ in cP, d in inches.
+  // Constant 11.05 is the lb/gal form; equivalent to 1.48·ρ(lb/ft³)·q/(d·μ) and 92.1·SG·q/(d·μ).
+  // (The specific-gravity constant 92.1 must NOT be applied to lb/gal — that overstates Re ~8.3×.)
   function ratReynolds(rho_lbgal, q_bbld, mu_cP, d_i_in) {
     if (![rho_lbgal, q_bbld, mu_cP, d_i_in].every(v => isFinite(v) && v > 0)) return NaN;
-    return 92.1 * rho_lbgal * q_bbld / (mu_cP * d_i_in);
+    return 11.05 * rho_lbgal * q_bbld / (mu_cP * d_i_in);
   }
   // Swamee-Jain explicit Fanning friction factor. Laminar fallback at Re ≤ 4000.
   function ratFanning(Re, eps_in, d_i_in) {
@@ -3696,11 +3702,13 @@
     if (!isFinite(lg) || lg === 0) return NaN;
     return 0.0625 / (lg * lg);
   }
-  // Friction pressure drop (psi). ρ in lb/gal, q in bbl/d, L in ft, d in inches.
+  // Friction pressure drop (psi). f = Fanning, ρ in lb/gal, q in bbl/d, L in ft, d in inches.
+  // Constant 5.50e-6 is the lb/gal Fanning form, from ΔP = 2·f·ρ·v²·L/D; equals f·ρ(lb/gal)·v²·L/(25.8·d).
+  // (The corresponding lb/ft³ constant is 7.36e-7. The old 11.46e-6 was ~2× high — missing the ½ in ρv²/2.)
   function ratFrictionDp(f, rho_lbgal, q_bbld, L_ft, d_i_in) {
     if (![f, rho_lbgal, q_bbld, L_ft, d_i_in].every(v => isFinite(v) && v >= 0)) return NaN;
     if (d_i_in <= 0) return NaN;
-    return 11.46e-6 * f * rho_lbgal * q_bbld * q_bbld * L_ft / Math.pow(d_i_in, 5);
+    return 5.50e-6 * f * rho_lbgal * q_bbld * q_bbld * L_ft / Math.pow(d_i_in, 5);
   }
   // Darcy steady-state radial. q in bbl/d, μ cP, B RB/STB, re/rw ft, h ft, ΔP psi, s dimensionless → k in mD.
   // s = assumed skin (NaN/missing ⇒ 0; s = 0 reduces to the bare radial form, current behavior).
