@@ -772,6 +772,121 @@
     </div>
 
     <div class="card">
+      <h2>Dead Oil Viscosity (Beggs &amp; Robinson, 1975)</h2>
+      <p>
+        Estimate gas-free (dead) crude oil viscosity from stock-tank API gravity and reservoir
+        temperature — the standard screening correlation when a measured viscosity is unavailable.
+        The result is the dead-oil viscosity μ<sub>od</sub>; live-oil viscosity at reservoir
+        conditions is lower and requires solution gas-oil ratio (see methods note).
+      </p>
+
+      <div class="section-label">1. Inputs</div>
+      <div class="row">
+        <div>
+          <label>Oil gravity, °API (stock tank)</label>
+          <input type="number" id="dovAPI" value="30" step="any">
+          <div class="input-helper">
+            Stock-tank oil gravity at 60°F. The Beggs-Robinson dead-oil fit was developed over roughly
+            16 to 58 °API; extrapolation below ~10 °API (heavy/biodegraded California crudes) grows
+            uncertain and tends to underpredict viscosity. Related to specific gravity by
+            SG = 141.5 / (131.5 + °API).
+          </div>
+        </div>
+        <div>
+          <label>Temperature, T (°F)</label>
+          <input type="number" id="dovT" value="100" step="any">
+          <div class="input-helper">
+            Temperature at which the viscosity is wanted — reservoir temperature for in-situ mobility,
+            or a shallower value for wellbore or surface conditions. Viscosity falls steeply as
+            temperature rises, so this input dominates the result.
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Correlation</label>
+          <select id="dovCorr">
+            <option value="auto" selected>Auto — select by API gravity</option>
+            <option value="br">Beggs-Robinson (1975) — 16-58 °API</option>
+            <option value="egbogah">Egbogah-Ng (1983) — 5-50 °API (heavy/extra-heavy)</option>
+          </select>
+          <div class="input-helper">
+            Auto uses Beggs-Robinson at or above 16 °API and Egbogah-Ng (its heavy-oil extension) below
+            16 °API, so any gravity returns a defensible estimate. For heavy and extra-heavy crudes
+            (roughly 6-15 °API) Egbogah-Ng is valid where Beggs-Robinson is an extrapolation. The active
+            correlation and its range are shown with the result. Below ~5 °API both are extrapolations —
+            prefer a measured viscosity-temperature curve.
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;align-items:center;margin-top:14px;flex-wrap:wrap;">
+        <label style="margin:0;display:inline-flex;align-items:center;gap:0.35rem;cursor:pointer;">
+          <input type="checkbox" id="dovLive" style="width:auto;"> Add solution GOR — compute live (saturated) oil viscosity
+        </label>
+      </div>
+      <div id="dovRsRow" class="row" style="margin-top:10px;display:none;">
+        <div>
+          <label>Solution GOR, R<sub>s</sub> (scf/STB)</label>
+          <input type="number" id="dovRs" value="500" step="any">
+          <div class="input-helper">
+            Solution gas-oil ratio at reservoir conditions — the dissolved gas that lowers oil viscosity.
+            Dissolved gas is applied to the dead-oil viscosity via the Beggs-Robinson live-oil relation,
+            valid at or below the bubble-point pressure (saturated oil). For undersaturated oil above the
+            bubble point, viscosity rises again with pressure and a separate correction is needed.
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:18px;">2. Result</div>
+      <div class="eq-block">
+        <div id="dovEqForm">—</div>
+        <div id="dovEqSub">—</div>
+        <div class="eq-result" id="dovEqResult">—</div>
+      </div>
+
+      <div class="eq-block" id="dovLiveEq" style="display:none;">
+        <div>μ<sub>ob</sub> = A · μ<sub>od</sub><sup>B</sup>,&nbsp; A = 10.715·(R<sub>s</sub> + 100)<sup>−0.515</sup>,&nbsp; B = 5.44·(R<sub>s</sub> + 150)<sup>−0.338</sup></div>
+        <div id="dovLiveSub">—</div>
+        <div class="eq-result" id="dovLiveResult">—</div>
+      </div>
+
+      <div class="result-primary">
+        <div class="label" id="dovMainLabel">Dead oil viscosity, μ<sub>od</sub></div>
+        <div class="primary" id="dovMain">—</div>
+        <div class="secondary" id="dovMainSec">—</div>
+      </div>
+
+      <div class="result-grid">
+        <div class="kv"><div class="k">Correlation used</div><div class="v" id="dovCorrUsed">—</div><div class="k" id="dovCorrRange">—</div></div>
+        <div class="kv"><div class="k" id="dovInterK">—</div><div class="v" id="dovInterV">—</div><div class="k" id="dovInterNote">intermediate</div></div>
+        <div class="kv"><div class="k">Specific gravity, γ<sub>o</sub></div><div class="v" id="dovSG">—</div><div class="k">141.5 / (131.5 + °API)</div></div>
+        <div class="kv" id="dovKvA" style="display:none;"><div class="k">A = 10.715·(R<sub>s</sub>+100)<sup>−0.515</sup></div><div class="v" id="dovA">—</div><div class="k">live-oil coefficient</div></div>
+        <div class="kv" id="dovKvB" style="display:none;"><div class="k">B = 5.44·(R<sub>s</sub>+150)<sup>−0.338</sup></div><div class="v" id="dovB">—</div><div class="k">live-oil exponent</div></div>
+      </div>
+
+      <div id="dovWarn" class="sat-warn" style="display:none;"></div>
+
+      <div class="citation-footer" id="dovCite">—</div>
+
+      <details style="margin-top:18px;">
+        <summary>Methods, references, and caveats</summary>
+        <ul style="font-size:13px;">
+          <li><strong>Correlation selection:</strong> Auto applies Beggs-Robinson at or above 16 °API and Egbogah-Ng below 16 °API; either can be forced. Both give dead-oil (gas-free) viscosity in cP with T in °F. The active correlation and its valid range travel with the result and the citation.</li>
+          <li><strong>Beggs and Robinson (1975):</strong> μ<sub>od</sub> = 10<sup>x</sup> − 1, x = y·T<sup>−1.163</sup>, y = 10<sup>z</sup>, z = 3.0324 − 0.02023·°API. Fit to 460 dead-oil observations spanning roughly 16-58 °API and 70-295°F. Accuracy degrades outside the fitted range, particularly for heavy oils.</li>
+          <li><strong>Egbogah-Ng (1983), "modified Beggs-Robinson":</strong> log<sub>10</sub>[log<sub>10</sub>(μ<sub>od</sub> + 1)] = 1.8653 − 0.025086·°API − 0.5644·log<sub>10</sub>(T), T in °F. Recalibrated on ~400 samples extending to lower gravity; applicable roughly 5-50 °API and 60-300°F, and the recommended choice for heavy and extra-heavy crude where Beggs-Robinson is an extrapolation. Reference: Egbogah, E.O. and Ng, J.T. (1990), "An improved temperature-viscosity correlation for crude oil systems," Journal of Petroleum Science and Engineering, vol. 4, no. 3, pp. 197-200 (correlation first presented by Egbogah, PETSOC 83-34-32, 1983).</li>
+          <li><strong>Extra-heavy oils (°API ≤ 10):</strong> De Ghetto et al. (1995), "Pressure-Volume-Temperature Correlations for Heavy and Extra Heavy Oils" (SPE International Heavy Oil Symposium), recalibrated the modified-Egbogah form separately for heavy (10 &lt; °API ≤ 22.3) and extra-heavy (°API ≤ 10) oils and is the most targeted published correlation for that range. It is not implemented here pending verification of the published coefficients from the primary source; for °API ≤ 10, treat the Egbogah-Ng result as a screening estimate and prefer measured viscosity.</li>
+          <li><strong>Dead vs. live oil:</strong> with the toggle off, the result is the gas-free (dead) viscosity. Toggle on and enter solution GOR to get the live (saturated) viscosity at reservoir pressure, which is lower. The live-oil relation is μ<sub>ob</sub> = A·μ<sub>od</sub><sup>B</sup>, where A = 10.715·(R<sub>s</sub> + 100)<sup>−0.515</sup> and B = 5.44·(R<sub>s</sub> + 150)<sup>−0.338</sup>, with R<sub>s</sub> the solution gas-oil ratio (scf/STB).</li>
+          <li><strong>Saturated vs. undersaturated:</strong> the live-oil relation applies at or below the bubble-point pressure. Above the bubble point (undersaturated), viscosity increases with pressure and the Vasquez-Beggs undersaturated correction μ = μ<sub>ob</sub>·(P/P<sub>b</sub>)<sup>m</sup> should be applied — not included here.</li>
+          <li><strong>Alternative dead-oil correlations:</strong> Beal (1946) and Glaso (1980) are the common alternatives. Beal tends to run higher at low temperature; Glaso was fit to North Sea crudes. Beggs-Robinson is the most widely used default for screening.</li>
+          <li><strong>Heavy California crudes:</strong> for biodegraded heavy oils common in shallow California fields, use Egbogah-Ng (Auto does this below 16 °API). Even so, dead-oil viscosity for such crudes is highly variable and correlations can scatter by an order of magnitude; prefer a measured viscosity-temperature curve (e.g., ASTM D7042 / D445) where available and use the correlation as a cross-check.</li>
+          <li><strong>Screening use:</strong> intended as a defensible first estimate. For mobility ratio, injectivity, or reserves work where viscosity is a sensitive input, corroborate with laboratory PVT data.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="card">
       <h2>Cement Volume (Annular)</h2>
       <div class="row3">
         <div><label>Casing OD (in)</label><input type="number" id="cmOD" value="9.625" step="any"></div>
@@ -2278,6 +2393,135 @@
   }
   ["boRs","boGg","boAPI","boT"].forEach(id => document.getElementById(id).oninput = updateBo);
   updateBo();
+
+  /**
+   * Beggs-Robinson (1975) dead (gas-free) oil viscosity. Valid ~16-58 °API, 70-295°F.
+   * @param {number} API - stock-tank oil gravity, °API
+   * @param {number} T_F - temperature, °F
+   * @returns {{muod:number, inter:number}} muod in cP; inter = x = log10(muod + 1)
+   */
+  function deadOilBR(API, T_F) {
+    const z = 3.0324 - 0.02023 * API;   // log10(y)
+    const y = Math.pow(10, z);
+    const x = y * Math.pow(T_F, -1.163);
+    return { muod: Math.pow(10, x) - 1, inter: x };
+  }
+  /**
+   * Egbogah-Ng (1983) "modified Beggs-Robinson" dead oil viscosity for heavy/extra-heavy crude.
+   * log10[log10(muod + 1)] = 1.8653 - 0.025086*API - 0.5644*log10(T). Valid ~5-50 °API, 60-300°F.
+   * Ref: Egbogah & Ng (1990), J. Pet. Sci. Eng. 4(3):197-200.
+   * @param {number} API - stock-tank oil gravity, °API
+   * @param {number} T_F - temperature, °F
+   * @returns {{muod:number, inter:number}} muod in cP; inter = W = log10[log10(muod + 1)]
+   */
+  function deadOilEgbogah(API, T_F) {
+    const W = 1.8653 - 0.025086 * API - 0.5644 * Math.log10(T_F);
+    const loglog = Math.pow(10, W);      // = log10(muod + 1)
+    return { muod: Math.pow(10, loglog) - 1, inter: W };
+  }
+  // Correlation metadata: display name, valid API/temperature ranges, equation form (HTML),
+  // and the intermediate-term label (HTML) shown in the result grid.
+  const DOV_CORR = {
+    br: {
+      name: "Beggs-Robinson (1975)", apiLo: 16, apiHi: 58, tLo: 70, tHi: 295,
+      form: "μ<sub>od</sub> = 10<sup>x</sup> − 1,&nbsp; x = y · T<sup>−1.163</sup>,&nbsp; y = 10<sup>(3.0324 − 0.02023·°API)</sup>",
+      interK: "x = log<sub>10</sub>(μ<sub>od</sub> + 1)", fn: deadOilBR,
+      cite: 'Beggs, H.D. and Robinson, J.R. (1975), "Estimating the Viscosity of Crude Oil Systems," Journal of Petroleum Technology, vol. 27, no. 9, pp. 1140-1141.'
+    },
+    egbogah: {
+      name: "Egbogah-Ng (1983)", apiLo: 5, apiHi: 50, tLo: 60, tHi: 300,
+      form: "log<sub>10</sub>[log<sub>10</sub>(μ<sub>od</sub> + 1)] = 1.8653 − 0.025086·°API − 0.5644·log<sub>10</sub>(T)",
+      interK: "W = log<sub>10</sub>[log<sub>10</sub>(μ<sub>od</sub> + 1)]", fn: deadOilEgbogah,
+      cite: 'Egbogah, E.O. and Ng, J.T. (1990), "An improved temperature-viscosity correlation for crude oil systems," Journal of Petroleum Science and Engineering, vol. 4, no. 3, pp. 197-200.'
+    }
+  };
+  /**
+   * Beggs-Robinson (1975) live (saturated) oil viscosity from dead-oil viscosity and solution GOR.
+   * @param {number} muod - dead oil viscosity, cP
+   * @param {number} Rs - solution gas-oil ratio, scf/STB
+   * @returns {{muob:number, A:number, B:number}} muob in cP; A, B are the correlation coefficients
+   */
+  function liveOilViscosity(muod, Rs) {
+    const A = 10.715 * Math.pow(Rs + 100, -0.515);
+    const B = 5.44 * Math.pow(Rs + 150, -0.338);
+    return { muob: A * Math.pow(muod, B), A, B };
+  }
+  function updateDOV() {
+    const API = parseFloat(document.getElementById("dovAPI").value);
+    const T   = parseFloat(document.getElementById("dovT").value);
+    const corrSel = document.getElementById("dovCorr").value;
+    const live = document.getElementById("dovLive").checked;
+    const Rs  = parseFloat(document.getElementById("dovRs").value);
+    const formEl = document.getElementById("dovEqForm");
+    const sub = document.getElementById("dovEqSub");
+    const res = document.getElementById("dovEqResult");
+    const liveEq = document.getElementById("dovLiveEq");
+    const liveSub = document.getElementById("dovLiveSub"), liveRes = document.getElementById("dovLiveResult");
+    const main = document.getElementById("dovMain"), mainSec = document.getElementById("dovMainSec");
+    const mainLabel = document.getElementById("dovMainLabel");
+    const corrUsedEl = document.getElementById("dovCorrUsed"), corrRangeEl = document.getElementById("dovCorrRange");
+    const interKEl = document.getElementById("dovInterK"), interVEl = document.getElementById("dovInterV");
+    const sgEl = document.getElementById("dovSG");
+    const kvA = document.getElementById("dovKvA"), kvB = document.getElementById("dovKvB");
+    const aEl = document.getElementById("dovA"), bEl = document.getElementById("dovB");
+    const citeEl = document.getElementById("dovCite");
+    const warn = document.getElementById("dovWarn");
+
+    // Toggle visibility of the GOR row, live-oil equation block, and A/B result cells.
+    document.getElementById("dovRsRow").style.display = live ? "" : "none";
+    liveEq.style.display = kvA.style.display = kvB.style.display = live ? "" : "none";
+
+    // Resolve the effective correlation. Auto: Beggs-Robinson at/above 16 °API, else Egbogah-Ng.
+    const key = corrSel === "auto" ? (API >= 16 ? "br" : "egbogah") : corrSel;
+    const c = DOV_CORR[key];
+
+    formEl.innerHTML = c.form;
+    const blank = () => { sub.textContent = res.textContent = main.textContent = mainSec.textContent =
+      liveSub.textContent = liveRes.textContent = corrUsedEl.textContent = corrRangeEl.textContent =
+      interVEl.textContent = sgEl.textContent = aEl.textContent = bEl.textContent = "—"; };
+    if (isNaN(API) || isNaN(T) || T <= 0 || API <= -131.5) { blank(); warn.style.display = "none"; return; }
+
+    const { muod, inter } = c.fn(API, T);
+    const SG = 141.5 / (131.5 + API);
+    sub.textContent = "→ μod = " + formatNumber(muod) + " cP  (°API = " + formatNumber(API) + ", T = " + formatNumber(T) + " °F)";
+    res.textContent = "μod = " + formatNumber(muod) + " cP";
+    corrUsedEl.textContent = c.name + (corrSel === "auto" ? " (auto)" : "");
+    corrRangeEl.textContent = "valid " + c.apiLo + "-" + c.apiHi + " °API, " + c.tLo + "-" + c.tHi + " °F";
+    interKEl.innerHTML = c.interK;
+    interVEl.textContent = formatNumber(inter);
+    sgEl.textContent = formatNumber(SG);
+    citeEl.textContent = "Dead-oil viscosity per " + c.cite +
+      " Live-oil (saturated) viscosity, when solution GOR is supplied, per the Beggs-Robinson live-oil relation. " +
+      "Correlation valid " + c.apiLo + "-" + c.apiHi + " °API and " + c.tLo + "-" + c.tHi + " °F; the live-oil relation is valid at or below the bubble-point pressure.";
+
+    const notes = [];
+    if (API < c.apiLo || API > c.apiHi) notes.push("°API is outside the " + c.name + " range (" + c.apiLo + "-" + c.apiHi + " °API); treat the result as an extrapolation.");
+    if (T < c.tLo || T > c.tHi) notes.push("Temperature is outside the " + c.name + " range (" + c.tLo + "-" + c.tHi + " °F); treat the result as an extrapolation.");
+
+    if (live && !isNaN(Rs) && Rs >= 0) {
+      const { muob, A, B } = liveOilViscosity(muod, Rs);
+      liveSub.textContent = "= " + formatNumber(A) + " × (" + formatNumber(muod) + ")^" + formatNumber(B) +
+        "  (Rs = " + formatNumber(Rs) + " scf/STB)";
+      liveRes.textContent = "μob = " + formatNumber(muob) + " cP";
+      aEl.textContent = formatNumber(A);
+      bEl.textContent = formatNumber(B);
+      mainLabel.innerHTML = "Live oil viscosity, μ<sub>ob</sub> (saturated)";
+      main.textContent = formatNumber(muob) + " cP";
+      mainSec.textContent = "dead-oil μod = " + formatNumber(muod) + " cP; Rs = " + formatNumber(Rs) + " scf/STB";
+    } else {
+      if (live) { liveSub.textContent = liveRes.textContent = aEl.textContent = bEl.textContent = "—"; }
+      mainLabel.innerHTML = "Dead oil viscosity, μ<sub>od</sub>";
+      main.textContent = formatNumber(muod) + " cP";
+      mainSec.textContent = "at " + formatNumber(API) + " °API and " + formatNumber(T) + " °F (dead oil)";
+      if (live && (isNaN(Rs) || Rs < 0)) notes.push("Enter a valid solution GOR (Rs ≥ 0) to compute live-oil viscosity.");
+    }
+
+    if (notes.length) { warn.textContent = notes.join(" "); warn.style.display = "block"; }
+    else warn.style.display = "none";
+  }
+  ["dovAPI","dovT","dovRs"].forEach(id => document.getElementById(id).oninput = updateDOV);
+  ["dovCorr","dovLive"].forEach(id => document.getElementById(id).onchange = updateDOV);
+  updateDOV();
 
   function updateOOIP() {
     const A   = parseFloat(document.getElementById("ooipA").value);
