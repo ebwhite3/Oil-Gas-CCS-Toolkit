@@ -1371,6 +1371,11 @@
           <input type="text" id="petroFEq" readonly>
         </div>
       </div>
+      <p style="font-size:12px; color:var(--muted); margin:6px 0 0 0;">
+        Formation factor coefficients from Asquith, G.B. &amp; Gibson, C.R. (1982), <em>Basic Well Log
+        Analysis for Geologists</em>, AAPG Methods in Exploration Series, Table 1 (modified after Asquith
+        1980; coefficients after Carothers 1958, Carothers &amp; Porter 1970, and Sethi 1979).
+      </p>
 
       <div class="section-label">5. Base case results</div>
       <div class="result-grid">
@@ -1396,9 +1401,9 @@
 
       <div class="section-label" style="margin-top:18px;">7. Sensitivity — NaCl (ppm) vs. ϕ and formation factor method</div>
       <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
-        R<sub>t</sub>, depth temperature, and T<sub>ref</sub> held constant.
-        Active row (selected rock type) and active column (current ϕ rounded to nearest 5%) are tinted.
-        Intersection cell is the base-case anchor.
+        R<sub>t</sub>, depth temperature, and T<sub>ref</sub> held constant. The first column uses your
+        populated porosity (tinted) as the base case; the remaining columns sweep ϕ from 10% to 40%.
+        The selected rock-type row is tinted, and its intersection with your ϕ is the base-case anchor.
         <span id="petroSensCorrCaption">Active correlation: Gen-9.</span>
       </p>
       <div style="overflow-x:auto;">
@@ -1408,13 +1413,32 @@
         </table>
       </div>
 
+      <div class="section-label" style="margin-top:18px;">8. Sensitivity — implied R<sub>t</sub> at 3,000 / 10,000 ppm NaCl vs. ϕ and formation factor method</div>
+      <p style="font-size:12px; color:var(--muted); margin:0 0 8px 0;">
+        R<sub>t</sub> (ohm-m) that would correspond to each reference salinity, holding depth temperature and
+        T<sub>ref</sub> constant. Each cell lists R<sub>t</sub> at 3,000 ppm (top, tagged 3k) and 10,000 ppm
+        (bottom, tagged 10k); 3,000 ppm is a common Class VI confining-zone reference and 10,000 ppm is the
+        USDW threshold (40 CFR §144.3). This table is independent of the measured R<sub>t</sub> input.
+        The first column uses your populated porosity (tinted) as the base case; the remaining columns
+        sweep ϕ from 10% to 40%. The selected rock-type row is tinted, and its intersection with your ϕ
+        is the base-case anchor.
+        <span id="petroSensRtCorrCaption">Active correlation: Gen-9.</span>
+      </p>
+      <div style="overflow-x:auto;">
+        <table id="petroSensRt" class="sensitivity">
+          <thead><tr id="petroSensRtHead"></tr></thead>
+          <tbody id="petroSensRtBody"></tbody>
+        </table>
+      </div>
+
       <details style="margin-top:18px;">
-        <summary>8. Methods, references, and caveats</summary>
+        <summary>9. Methods, references, and caveats</summary>
         <ul style="font-size:13px;">
           <li><strong>Arps temperature correction:</strong> R<sub>w</sub>(T<sub>2</sub>) = R<sub>w</sub>(T<sub>1</sub>) · (T<sub>1</sub> + 7) / (T<sub>2</sub> + 7), T in °F. Arps (1953).</li>
           <li><strong>Gen-9 NaCl (default):</strong> NaCl (ppm) = ROUND(5697.5 · R<sub>w</sub>(T<sub>ref</sub>)<sup>−1.079</sup>, nearest 10). Empirical fit to the Schlumberger Gen-9 chart at T<sub>ref</sub> = 75°F.</li>
           <li><strong>Schlumberger 1988 chart correlation:</strong> NaCl (ppm) = 10<sup>((3.562 − log<sub>10</sub>(R<sub>w</sub>(T<sub>ref</sub>) − 0.0123)) / 0.955)</sup>. From <em>Schlumberger Log Interpretation Charts</em>, 1988 edition, Gen-9.</li>
           <li><strong>Archie's law:</strong> F = R<sub>o</sub>/R<sub>w</sub>; R<sub>w</sub> = R<sub>t</sub>/F under fully water-saturated, clean (shale-free) conditions. Hydrocarbon presence or shaliness will bias R<sub>w</sub> high (and salinity low).</li>
+          <li><strong>Formation factor coefficients:</strong> all rock-type F = a/ϕ<sup>m</sup> relationships are from Asquith, G.B. and Gibson, C.R. (1982), <em>Basic Well Log Analysis for Geologists</em>, Methods in Exploration Series, American Association of Petroleum Geologists, Tulsa, OK (ISBN 0-89181-652-6), Table 1 — modified after Asquith (1980). Underlying coefficients: consolidated-sandstone and unconsolidated-sand (Humble) forms; average, shaly, calcareous, and carbonate sands after Carothers (1958); Pliocene (Southern California) and Miocene (Texas-Louisiana Gulf Coast) sands after Carothers and Porter (1970); clean granular formations after Sethi (1979).</li>
           <li><strong>Default surface T:</strong> 70°F (typical for shallow subsurface in coastal California). Adjust for site-specific MAGT (mean annual ground temperature).</li>
           <li><strong>Default gradient (Mode B):</strong> 1.6°F/100 ft, representative of average California sedimentary-basin geothermal gradient. Local gradients range ~1.4–1.8°F/100 ft in non-geothermal basins, higher near the Coast Ranges and Salton Trough.</li>
           <li><strong>TDS vs. NaCl-equivalent:</strong> reported salinity is NaCl-equivalent. For brines with significant Ca, Mg, sulfate, or bicarbonate, true TDS may differ materially. Apply ion-specific corrections if available.</li>
@@ -3754,50 +3778,78 @@
     document.getElementById("petroRt10k").textContent = isFinite(rt10k) ? petroFormatNum(rt10k, 2) : "—";
     document.getElementById("petroRt3k").textContent  = isFinite(rt3k)  ? petroFormatNum(rt3k,  2) : "—";
 
-    // Sensitivity table: rows = FF methods, cols = SENS_PHIS
-    const head = document.getElementById("petroSensHead");
-    const body = document.getElementById("petroSensBody");
-    if (!head || !body) return;
+    // ---- Sensitivity tables (rows = FF methods, columns = porosity) ----
+    // The first (far-left) column uses the user's populated porosity as the highlighted
+    // base case; the remaining columns sweep ϕ from 10% to 40%. Both tables share the same
+    // column layout and highlighting, so build them from one column list and one body builder.
+    const head   = document.getElementById("petroSensHead");
+    const body   = document.getElementById("petroSensBody");
+    const headRt = document.getElementById("petroSensRtHead");
+    const bodyRt = document.getElementById("petroSensRtBody");
+    if (!head || !body || !headRt || !bodyRt) return;
 
-    // Find nearest sensitivity column to current phi (rounded to nearest 5%).
-    let activeColIdx = -1;
-    if (isFinite(phi)) {
-      let best = Infinity;
-      SENS_PHIS.forEach((p, i) => {
-        const d = Math.abs(p - phi);
-        if (d < best) { best = d; activeColIdx = i; }
-      });
-      // Only highlight if within 2.5% of a column value (otherwise no match)
-      if (Math.abs(SENS_PHIS[activeColIdx] - phi) > 0.025) activeColIdx = -1;
+    document.getElementById("petroSensRtCorrCaption").textContent = "Active correlation: " + corrLabel + ".";
+
+    // Column list: actual porosity first (flagged), then the fixed sweep.
+    const actualPhi = (isFinite(phi) && phi > 0 && phi < 1) ? phi : NaN;
+    const sensCols = [{ phi: actualPhi, actual: true }].concat(SENS_PHIS.map(p => ({ phi: p, actual: false })));
+    const fmtPhiPct = f => { const v = f * 100; return Number.isInteger(v) ? v.toFixed(0) : v.toFixed(1); };
+
+    // Shared header — the actual-porosity column is the highlighted column.
+    const sensHead = '<th class="row-label">Rock type / F</th>' +
+      sensCols.map(col => {
+        const lbl = col.actual
+          ? (isFinite(col.phi) ? "ϕ = " + fmtPhiPct(col.phi) + "% (base)" : "ϕ = — (base)")
+          : "ϕ = " + (col.phi * 100).toFixed(0) + "%";
+        return `<th class="${col.actual ? "current" : ""}">${lbl}</th>`;
+      }).join("");
+    head.innerHTML = sensHead;
+    headRt.innerHTML = sensHead;
+
+    // Shared body builder. cellFn(method, col, isAnchor) returns the cell's inner HTML.
+    function buildSensBody(cellFn) {
+      return FF_METHODS.map(m => {
+        const isActiveRow = m.id === rockId;
+        const labelCell =
+          `<td class="row-label" style="${isActiveRow ? "background:var(--brand-light); font-weight:600;" : ""}">` +
+          `<div>${m.name}</div>` +
+          `<div style="font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-top:2px;">${m.eq}</div>` +
+          `</td>`;
+        const cells = sensCols.map(col => {
+          const isAnchor = isActiveRow && col.actual;
+          const style = isAnchor ? "background:var(--brand); color:#fff; font-weight:700;" : "";
+          return `<td class="${col.actual ? "current" : ""}" style="${style}">${cellFn(m, col, isAnchor)}</td>`;
+        }).join("");
+        return `<tr>${labelCell}${cells}</tr>`;
+      }).join("");
     }
 
-    head.innerHTML = '<th class="row-label">Rock type / F</th>' +
-      SENS_PHIS.map((p, i) =>
-        `<th class="${i === activeColIdx ? "current" : ""}">ϕ = ${(p * 100).toFixed(0)}%</th>`
-      ).join("");
+    // Table 1: NaCl (ppm) from the measured Rt at each ϕ / method.
+    body.innerHTML = buildSensBody((m, col) => {
+      let Fc = NaN, Rwd = NaN, naClC = NaN;
+      if (isFinite(col.phi) && col.phi > 0 && col.phi < 1) Fc = m.F(col.phi);
+      if (isFinite(Fc) && Fc > 0 && isFinite(Rt) && Rt > 0) Rwd = Rt / Fc;
+      if (isFinite(Rwd) && isFinite(Tref) && isFinite(Tdepth)) naClC = petroComputeNaCl(Rwd, Tref, Tdepth);
+      return petroFormatPpm(naClC);
+    });
 
-    const rowsHtml = FF_METHODS.map(m => {
-      const isActiveRow = m.id === rockId;
-      const labelCell =
-        `<td class="row-label" style="${isActiveRow ? "background:var(--brand-light); font-weight:600;" : ""}">` +
-        `<div>${m.name}</div>` +
-        `<div style="font-family:var(--font-mono); font-size:11px; color:var(--muted); margin-top:2px;">${m.eq}</div>` +
-        `</td>`;
-      const cells = SENS_PHIS.map((p, ci) => {
-        let Fc = NaN, Rwd = NaN, naClC = NaN;
-        if (p > 0 && p < 1) Fc = m.F(p);
-        if (isFinite(Fc) && Fc > 0 && isFinite(Rt) && Rt > 0) Rwd = Rt / Fc;
-        if (isFinite(Rwd) && isFinite(Tref) && isFinite(Tdepth)) naClC = petroComputeNaCl(Rwd, Tref, Tdepth);
-        const isAnchor = isActiveRow && ci === activeColIdx;
-        const classes = [];
-        if (isAnchor)             classes.push("current");
-        else if (ci === activeColIdx) classes.push("current");
-        const style = isAnchor ? "background:var(--brand); color:#fff; font-weight:700;" : "";
-        return `<td class="${classes.join(" ")}" style="${style}">${petroFormatPpm(naClC)}</td>`;
-      }).join("");
-      return `<tr>${labelCell}${cells}</tr>`;
-    }).join("");
-    body.innerHTML = rowsHtml;
+    // Table 2: implied Rt at 3,000 and 10,000 ppm. Independent of the measured Rt input;
+    // depends only on F (method × ϕ), Tref, Tdepth, and correlation.
+    bodyRt.innerHTML = buildSensBody((m, col, isAnchor) => {
+      let Fc = NaN, rt3 = NaN, rt10 = NaN;
+      if (isFinite(col.phi) && col.phi > 0 && col.phi < 1) Fc = m.F(col.phi);
+      if (isFinite(Fc)) {
+        rt3  = rtFromNaCl(3000,  Fc, Tref, Tdepth, corr);
+        rt10 = rtFromNaCl(10000, Fc, Tref, Tdepth, corr);
+      }
+      const tagStyle = isAnchor ? "opacity:0.8;" : "color:var(--muted);";
+      const divider  = isAnchor ? "rgba(255,255,255,0.4)" : "var(--border)";
+      const c3  = isFinite(rt3)  ? petroFormatNum(rt3,  2) : "—";
+      const c10 = isFinite(rt10) ? petroFormatNum(rt10, 2) : "—";
+      return `<div><span style="font-size:10px; ${tagStyle}">3k</span> ${c3}</div>` +
+        `<div style="border-top:1px solid ${divider}; margin-top:2px; padding-top:2px;">` +
+        `<span style="font-size:10px; ${tagStyle}">10k</span> ${c10}</div>`;
+    });
   }
 
   // Wire all petro inputs and toggles
